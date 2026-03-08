@@ -17,6 +17,7 @@ import About from "./pages/About";
 import Login from "./pages/Login";
 import Wishlist from "./pages/Wishlist";
 import AdminPanel from "./pages/AdminPanel";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
