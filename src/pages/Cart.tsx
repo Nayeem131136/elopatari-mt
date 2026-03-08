@@ -62,6 +62,16 @@ const Cart = () => {
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-foreground text-sm md:text-base">{product.name}</h3>
                   <p className="text-xs text-muted-foreground">{product.nameBn}</p>
+                  {customization && Object.keys(customization).length > 0 && (
+                    <div className="mt-1 space-y-0.5">
+                      {Object.entries(customization).map(([key, val]) => (
+                        <p key={key} className="text-xs text-muted-foreground">
+                          <span className="capitalize">{key.replace(/([A-Z])/g, " $1")}</span>:{" "}
+                          {val.startsWith("data:") ? "📷 Photo attached" : val}
+                        </p>
+                      ))}
+                    </div>
+                  )}
                   <p className="font-bold text-foreground mt-1">৳{product.price}</p>
                   <div className="flex items-center gap-3 mt-2">
                     <div className="flex items-center border border-border rounded-full">
