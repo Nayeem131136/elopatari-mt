@@ -1,10 +1,16 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { Product } from "@/data/products";
 
+export interface GiftBoxSelection {
+  productIds: string[];   // shop products included
+  extraIds: string[];     // extras like chocolate, card etc.
+}
+
 export interface CartItem {
   product: Product;
   quantity: number;
   selectedSize?: string;
+  giftBox?: GiftBoxSelection;
 }
 
 interface CartContextType {
