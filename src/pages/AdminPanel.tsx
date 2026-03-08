@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Navigate } from "react-router-dom";
+import UserRoleManager from "@/components/admin/UserRoleManager";
 
 type Order = {
   id: string;
@@ -389,6 +390,11 @@ const AdminPanel = () => {
             })}
           </div>
         )}
+
+        {/* User Role Management */}
+        <div className="mt-12 border-t border-border pt-8">
+          <UserRoleManager />
+        </div>
       </div>
     </div>
   );
