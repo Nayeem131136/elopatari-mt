@@ -18,6 +18,7 @@ const sizedCategories = [
 
 const ProductDetail = () => {
   const { id } = useParams();
+  const { products } = useProducts();
   const product = products.find((p) => p.id === id);
   const { addToCart, wishlist, toggleWishlist } = useCart();
   const [qty, setQty] = useState(1);
