@@ -42,6 +42,29 @@ export const categorySizes: Record<string, SizeOption[]> = {
 
 export const requiresSize = (category: string) => !!categorySizes[category];
 
+// Gift box extras (small add-on items)
+export interface GiftBoxExtra {
+  id: string;
+  name: string;
+  nameBn: string;
+  price: number;
+  emoji: string;
+}
+
+export const giftBoxExtras: GiftBoxExtra[] = [
+  { id: "chocolate", name: "Chocolate Box", nameBn: "চকলেট বক্স", price: 150, emoji: "🍫" },
+  { id: "flowers", name: "Dried Flowers", nameBn: "শুকনো ফুল", price: 120, emoji: "💐" },
+  { id: "card", name: "Greeting Card", nameBn: "গ্রিটিং কার্ড", price: 50, emoji: "💌" },
+  { id: "candle", name: "Scented Candle", nameBn: "সুগন্ধি মোমবাতি", price: 180, emoji: "🕯️" },
+  { id: "keychain", name: "Custom Keychain", nameBn: "কাস্টম কিচেইন", price: 100, emoji: "🔑" },
+  { id: "mug", name: "Printed Mug", nameBn: "প্রিন্টেড মগ", price: 250, emoji: "☕" },
+  { id: "sticker", name: "Sticker Pack", nameBn: "স্টিকার প্যাক", price: 60, emoji: "✨" },
+  { id: "bookmark", name: "Handmade Bookmark", nameBn: "হ্যান্ডমেড বুকমার্ক", price: 80, emoji: "📖" },
+];
+
+// Gift box packaging charge
+export const giftBoxPackagingCharge = 100;
+
 export const categories = [
   { id: "photo-frame", name: "Photo Frame", nameBn: "ফটো ফ্রেম", icon: "🖼️" },
   { id: "embroidery", name: "Embroidery Hoop Art", nameBn: "এমব্রয়ডারি হুপ আর্ট", icon: "🧵" },
