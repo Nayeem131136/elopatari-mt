@@ -1,9 +1,14 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { Product } from "@/data/products";
 
+export interface CustomizationData {
+  [key: string]: string; // field key → value (for files, stores base64 data URL)
+}
+
 export interface CartItem {
   product: Product;
   quantity: number;
+  customization?: CustomizationData;
 }
 
 interface CartContextType {
