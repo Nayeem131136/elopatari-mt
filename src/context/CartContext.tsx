@@ -1,9 +1,18 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { Product, products as allProducts, giftBoxExtras, giftBoxPackagingCharge } from "@/data/products";
 
+export interface GiftBoxCategoryItem {
+  categoryId: string;    // e.g. "photo-frame"
+  categoryName: string;
+  sizeValue: string;
+  sizeLabel: string;
+  price: number;
+}
+
 export interface GiftBoxSelection {
-  productIds: string[];   // shop products included
-  extraIds: string[];     // extras like chocolate, card etc.
+  categories: GiftBoxCategoryItem[];  // frame/embroidery/canvas with size
+  crochetProductIds: string[];        // crochet products by id
+  extraIds: string[];                 // extras like chocolate, card etc.
 }
 
 export interface CartItem {
