@@ -52,8 +52,8 @@ const Cart = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Cart items */}
           <div className="lg:col-span-2 space-y-4">
-            {items.map(({ product, quantity }) => (
-              <div key={product.id} className="flex gap-4 p-4 bg-card rounded-xl border border-border/50">
+            {items.map(({ product, quantity, customization }, index) => (
+              <div key={`${product.id}-${index}`} className="flex gap-4 p-4 bg-card rounded-xl border border-border/50">
                 <img
                   src={getImage(product.image)}
                   alt={product.name}
