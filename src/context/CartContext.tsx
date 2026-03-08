@@ -61,16 +61,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const removeFromCart = useCallback((cartKey: string) => {
-    setItems((prev) => prev.filter((i) => getCartKey(i.product.id, i.selectedSize) !== cartKey));
+    setItems((prev) => prev.filter((i) => getItemKey(i) !== cartKey));
   }, []);
 
   const updateQuantity = useCallback((cartKey: string, quantity: number) => {
     if (quantity <= 0) {
-      setItems((prev) => prev.filter((i) => getCartKey(i.product.id, i.selectedSize) !== cartKey));
+      setItems((prev) => prev.filter((i) => getItemKey(i) !== cartKey));
       return;
     }
     setItems((prev) =>
-      prev.map((i) => (getCartKey(i.product.id, i.selectedSize) === cartKey ? { ...i, quantity } : i))
+      prev.map((i) => (getItemKey(i) === cartKey ? { ...i, quantity } : i))
     );
   }, []);
 
