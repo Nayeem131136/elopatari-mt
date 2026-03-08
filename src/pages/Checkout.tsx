@@ -366,7 +366,7 @@ const Checkout = () => {
                     <div className="border-t border-border pt-2 space-y-1">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">এখন পরিশোধ</span>
-                        <span className="font-bold text-green-600">৳{payableAmount}</span>
+                        <span className="font-bold text-primary">৳{payableAmount}</span>
                       </div>
                       {cashOnDelivery > 0 && (
                         <div className="flex justify-between">
