@@ -52,8 +52,8 @@ const Cart = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Cart items */}
           <div className="lg:col-span-2 space-y-4">
-            {items.map(({ product, quantity, customization }, index) => (
-              <div key={`${product.id}-${index}`} className="flex gap-4 p-4 bg-card rounded-xl border border-border/50">
+            {items.map(({ product, quantity }) => (
+              <div key={product.id} className="flex gap-4 p-4 bg-card rounded-xl border border-border/50">
                 <img
                   src={getImage(product.image)}
                   alt={product.name}
@@ -62,16 +62,6 @@ const Cart = () => {
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-foreground text-sm md:text-base">{product.name}</h3>
                   <p className="text-xs text-muted-foreground">{product.nameBn}</p>
-                  {customization && Object.keys(customization).length > 0 && (
-                    <div className="mt-1 space-y-0.5">
-                      {Object.entries(customization).map(([key, val]) => (
-                        <p key={key} className="text-xs text-muted-foreground">
-                          <span className="capitalize">{key.replace(/([A-Z])/g, " $1")}</span>:{" "}
-                          {val.startsWith("data:") ? "📷 Photo attached" : val}
-                        </p>
-                      ))}
-                    </div>
-                  )}
                   <p className="font-bold text-foreground mt-1">৳{product.price}</p>
                   <div className="flex items-center gap-3 mt-2">
                     <div className="flex items-center border border-border rounded-full">
