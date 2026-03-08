@@ -1,12 +1,19 @@
 import { useParams, Link } from "react-router-dom";
-import { products, categorySizes, requiresSize, giftBoxExtras, giftBoxPackagingCharge } from "@/data/products";
+import { products, categorySizes, requiresSize, giftBoxExtras, giftBoxPackagingCharge, categories } from "@/data/products";
 import { getImage } from "@/components/ProductCard";
-import { useCart } from "@/context/CartContext";
+import { useCart, GiftBoxCategoryItem, calcGiftBoxPrice } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
-import { Heart, ShoppingCart, Star, Minus, Plus, ArrowLeft, Ruler, Package, Check } from "lucide-react";
+import { Heart, ShoppingCart, Star, Minus, Plus, ArrowLeft, Ruler, Package, Check, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import ProductCard from "@/components/ProductCard";
+
+// Categories that can go in a gift box (with sizes)
+const sizedCategories = [
+  { id: "photo-frame", name: "Photo Frame", nameBn: "ফটো ফ্রেম", emoji: "🖼️" },
+  { id: "embroidery", name: "Embroidery Hoop Art", nameBn: "এমব্রয়ডারি হুপ আর্ট", emoji: "🧵" },
+  { id: "canvas", name: "Canvas Art", nameBn: "ক্যানভাস আর্ট", emoji: "🎨" },
+];
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -16,7 +23,9 @@ const ProductDetail = () => {
   const [selectedSize, setSelectedSize] = useState<string>("");
 
   // Gift box state
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<Record<string, string>>({}); // categoryId -> sizeValue
+  const [enabledCategories, setEnabledCategories] = useState<Record<string, boolean>>({});
+  const [selectedCrochetProducts, setSelectedCrochetProducts] = useState<string[]>([]);
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
 
   if (!product) {
@@ -37,24 +46,56 @@ const ProductDetail = () => {
   const sizes = categorySizes[product.category] || [];
   const isGiftBox = product.category === "custom";
 
-  // Products available for gift box (non-custom)
-  const boxProducts = products.filter((p) => p.category !== "custom" && p.inStock);
+  // Crochet products available
+  const crochetProducts = products.filter((p) => p.category === "crochet" && p.inStock);
 
-  // Gift box price calculation
-  const giftBoxTotal = isGiftBox
-    ? giftBoxPackagingCharge
-      + selectedProducts.reduce((sum, pid) => {
-          const p = products.find((pr) => pr.id === pid);
-          return sum + (p?.price || 0);
-        }, 0)
-      + selectedExtras.reduce((sum, eid) => {
-          const e = giftBoxExtras.find((ex) => ex.id === eid);
-          return sum + (e?.price || 0);
-        }, 0)
-    : product.price;
+  // Build gift box selection
+  const buildGiftBoxSelection = () => {
+    const catItems: GiftBoxCategoryItem[] = [];
+    for (const cat of sizedCategories) {
+      if (enabledCategories[cat.id] && selectedCategories[cat.id]) {
+        const sizeVal = selectedCategories[cat.id];
+        const sizeObj = categorySizes[cat.id]?.find((s) => s.value === sizeVal);
+        // Use base price from first product of that category
+        const baseProduct = products.find((p) => p.category === cat.id);
+        catItems.push({
+          categoryId: cat.id,
+          categoryName: cat.name,
+          sizeValue: sizeVal,
+          sizeLabel: sizeObj?.label || sizeVal,
+          price: baseProduct?.price || 0,
+        });
+      }
+    }
+    return {
+      categories: catItems,
+      crochetProductIds: selectedCrochetProducts,
+      extraIds: selectedExtras,
+    };
+  };
 
-  const toggleProduct = (pid: string) => {
-    setSelectedProducts((prev) =>
+  const giftBoxSelection = isGiftBox ? buildGiftBoxSelection() : null;
+  const giftBoxTotal = giftBoxSelection ? calcGiftBoxPrice(giftBoxSelection) : 0;
+  const hasAnySelection = giftBoxSelection
+    ? giftBoxSelection.categories.length > 0 || giftBoxSelection.crochetProductIds.length > 0 || giftBoxSelection.extraIds.length > 0
+    : false;
+
+  const toggleCategory = (catId: string) => {
+    setEnabledCategories((prev) => {
+      const next = { ...prev, [catId]: !prev[catId] };
+      if (!next[catId]) {
+        setSelectedCategories((sc) => { const n = { ...sc }; delete n[catId]; return n; });
+      }
+      return next;
+    });
+  };
+
+  const selectCategorySize = (catId: string, sizeVal: string) => {
+    setSelectedCategories((prev) => ({ ...prev, [catId]: sizeVal }));
+  };
+
+  const toggleCrochet = (pid: string) => {
+    setSelectedCrochetProducts((prev) =>
       prev.includes(pid) ? prev.filter((id) => id !== pid) : [...prev, pid]
     );
   };
@@ -70,14 +111,21 @@ const ProductDetail = () => {
       toast.error("সাইজ সিলেক্ট করুন!");
       return;
     }
-    if (isGiftBox && selectedProducts.length === 0 && selectedExtras.length === 0) {
-      toast.error("অন্তত একটি আইটেম সিলেক্ট করুন!");
-      return;
-    }
-
     if (isGiftBox) {
-      addToCart(product, undefined, { productIds: selectedProducts, extraIds: selectedExtras });
-      toast.success(`Gift Box (${selectedProducts.length + selectedExtras.length} items) added to cart!`);
+      // Validate: enabled categories must have size selected
+      for (const cat of sizedCategories) {
+        if (enabledCategories[cat.id] && !selectedCategories[cat.id]) {
+          toast.error(`${cat.nameBn} এর সাইজ সিলেক্ট করুন!`);
+          return;
+        }
+      }
+      if (!hasAnySelection) {
+        toast.error("অন্তত একটি আইটেম সিলেক্ট করুন!");
+        return;
+      }
+      addToCart(product, undefined, giftBoxSelection!);
+      const totalItems = (giftBoxSelection?.categories.length || 0) + selectedCrochetProducts.length + selectedExtras.length;
+      toast.success(`Gift Box (${totalItems} items) কার্টে যোগ হয়েছে!`);
     } else {
       for (let i = 0; i < qty; i++) addToCart(product, selectedSize || undefined);
       toast.success(`${qty}x ${product.name}${selectedSize ? ` (${sizes.find(s => s.value === selectedSize)?.label})` : ""} added to cart!`);
@@ -115,8 +163,8 @@ const ProductDetail = () => {
             <div className="flex items-baseline gap-3 mb-6">
               {isGiftBox ? (
                 <>
-                  <span className="text-3xl font-bold text-foreground">৳{giftBoxTotal}</span>
-                  <span className="text-sm text-muted-foreground">(প্যাকেজিং ৳{giftBoxPackagingCharge} + আইটেম)</span>
+                  <span className="text-3xl font-bold text-foreground">৳{hasAnySelection ? giftBoxTotal : giftBoxPackagingCharge}</span>
+                  <span className="text-sm text-muted-foreground">{hasAnySelection ? "(মোট)" : "(প্যাকেজিং থেকে শুরু)"}</span>
                 </>
               ) : (
                 <>
@@ -156,49 +204,100 @@ const ProductDetail = () => {
 
             {/* Gift Box Builder */}
             {isGiftBox && (
-              <div className="space-y-6 mb-6">
-                {/* Select shop products */}
-                <div>
-                  <label className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
-                    <Package className="h-4 w-4 text-primary" /> প্রোডাক্ট বাছুন (শপ থেকে)
-                  </label>
-                  <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto pr-1">
-                    {boxProducts.map((p) => {
-                      const pSizes = categorySizes[p.category];
-                      return (
-                        <button
-                          key={p.id}
-                          onClick={() => toggleProduct(p.id)}
-                          className={`flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all ${
-                            selectedProducts.includes(p.id)
-                              ? "border-primary bg-primary/5 shadow-sm"
-                              : "border-border hover:border-primary/30"
-                          }`}
-                        >
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-foreground">{p.name}</p>
-                            {pSizes && (
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                সাইজ: {pSizes.map((s) => s.label).join(", ")}
-                              </p>
-                            )}
-                          </div>
-                          <span className="text-sm font-bold text-foreground whitespace-nowrap">৳{p.price}</span>
-                          {selectedProducts.includes(p.id) && (
-                            <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-                              <Check className="h-3 w-3 text-primary-foreground" />
-                            </div>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+              <div className="space-y-4 mb-6">
+                <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <Package className="h-4 w-4 text-primary" /> বক্সে কী কী রাখবেন বাছুন
+                </label>
 
-                {/* Select extras */}
+                {/* Sized categories: Frame, Embroidery, Canvas */}
+                {sizedCategories.map((cat) => {
+                  const catSizes = categorySizes[cat.id] || [];
+                  const isEnabled = !!enabledCategories[cat.id];
+                  const chosenSize = selectedCategories[cat.id];
+                  const baseProduct = products.find((p) => p.category === cat.id);
+
+                  return (
+                    <div key={cat.id} className={`rounded-xl border-2 transition-all overflow-hidden ${isEnabled ? "border-primary bg-primary/5" : "border-border"}`}>
+                      {/* Category toggle */}
+                      <button
+                        onClick={() => toggleCategory(cat.id)}
+                        className="w-full flex items-center gap-3 p-3.5 text-left"
+                      >
+                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${isEnabled ? "bg-primary border-primary" : "border-muted-foreground/40"}`}>
+                          {isEnabled && <Check className="h-3 w-3 text-primary-foreground" />}
+                        </div>
+                        <span className="text-lg">{cat.emoji}</span>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-foreground">{cat.name}</p>
+                          <p className="text-xs text-muted-foreground">{cat.nameBn}</p>
+                        </div>
+                        {baseProduct && <span className="text-sm font-bold text-foreground">৳{baseProduct.price}</span>}
+                        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isEnabled ? "rotate-180" : ""}`} />
+                      </button>
+
+                      {/* Size options (shown when enabled) */}
+                      {isEnabled && (
+                        <div className="px-3.5 pb-3.5 pt-0">
+                          <p className="text-xs text-muted-foreground mb-2">সাইজ বাছুন: <span className="text-destructive">*</span></p>
+                          <div className="flex flex-wrap gap-2">
+                            {catSizes.map((size) => (
+                              <button
+                                key={size.value}
+                                onClick={() => selectCategorySize(cat.id, size.value)}
+                                className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                                  chosenSize === size.value
+                                    ? "border-primary bg-primary text-primary-foreground"
+                                    : "border-border text-foreground hover:border-primary/40"
+                                }`}
+                              >
+                                {size.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Crochet products */}
+                {crochetProducts.length > 0 && (
+                  <div className="rounded-xl border-2 border-border overflow-hidden">
+                    <div className="p-3.5">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-lg">🧶</span>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">Crochet Items</p>
+                          <p className="text-xs text-muted-foreground">ক্রোশে আইটেম</p>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        {crochetProducts.map((cp) => (
+                          <button
+                            key={cp.id}
+                            onClick={() => toggleCrochet(cp.id)}
+                            className={`w-full flex items-center gap-3 p-2.5 rounded-lg border transition-all text-left ${
+                              selectedCrochetProducts.includes(cp.id)
+                                ? "border-primary bg-primary/5"
+                                : "border-border/50 hover:border-primary/30"
+                            }`}
+                          >
+                            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${selectedCrochetProducts.includes(cp.id) ? "bg-primary border-primary" : "border-muted-foreground/40"}`}>
+                              {selectedCrochetProducts.includes(cp.id) && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
+                            </div>
+                            <span className="flex-1 text-sm text-foreground">{cp.name}</span>
+                            <span className="text-sm font-bold text-foreground">৳{cp.price}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Extras */}
                 <div>
-                  <label className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
-                    ✨ অতিরিক্ত আইটেম যোগ করুন
+                  <label className="text-sm font-semibold text-foreground flex items-center gap-2 mb-2">
+                    ✨ অতিরিক্ত আইটেম
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {giftBoxExtras.map((extra) => (
@@ -227,19 +326,25 @@ const ProductDetail = () => {
                 </div>
 
                 {/* Price breakdown */}
-                {(selectedProducts.length > 0 || selectedExtras.length > 0) && (
+                {hasAnySelection && (
                   <div className="bg-accent/30 rounded-xl p-4 text-sm space-y-1.5">
                     <p className="font-semibold text-foreground mb-2">💰 মূল্য বিবরণ:</p>
                     <div className="flex justify-between text-muted-foreground">
                       <span>📦 প্যাকেজিং চার্জ</span>
                       <span className="text-foreground">৳{giftBoxPackagingCharge}</span>
                     </div>
-                    {selectedProducts.map((pid) => {
+                    {giftBoxSelection?.categories.map((c) => (
+                      <div key={c.categoryId} className="flex justify-between text-muted-foreground">
+                        <span>{c.categoryName} ({c.sizeLabel})</span>
+                        <span className="text-foreground">৳{c.price}</span>
+                      </div>
+                    ))}
+                    {selectedCrochetProducts.map((pid) => {
                       const p = products.find((pr) => pr.id === pid);
                       return p ? (
                         <div key={pid} className="flex justify-between text-muted-foreground">
-                          <span className="truncate mr-2">🎁 {p.name}</span>
-                          <span className="text-foreground whitespace-nowrap">৳{p.price}</span>
+                          <span>🧶 {p.name}</span>
+                          <span className="text-foreground">৳{p.price}</span>
                         </div>
                       ) : null;
                     })}
@@ -288,7 +393,7 @@ const ProductDetail = () => {
                 onClick={handleAdd}
               >
                 <ShoppingCart className="h-5 w-5 mr-2" />
-                {isGiftBox ? `Gift Box কার্টে যোগ করুন — ৳${giftBoxTotal}` : "Add to Cart"}
+                {isGiftBox ? `Gift Box কার্টে যোগ করুন${hasAnySelection ? ` — ৳${giftBoxTotal}` : ""}` : "Add to Cart"}
               </Button>
               <Button
                 size="lg"
