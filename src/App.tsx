@@ -14,6 +14,7 @@ import Categories from "./pages/Categories";
 import About from "./pages/About";
 import Login from "./pages/Login";
 import Wishlist from "./pages/Wishlist";
+import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
