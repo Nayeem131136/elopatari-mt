@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import { useCart, getItemKey } from "@/context/CartContext";
+import { useCart, getItemKey, calcGiftBoxPrice } from "@/context/CartContext";
 import { getImage } from "@/components/ProductCard";
-import { categorySizes, products as allProducts, giftBoxExtras, giftBoxPackagingCharge } from "@/data/products";
+import { categorySizes, products as allProducts, giftBoxExtras } from "@/data/products";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2, ShoppingCart, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
