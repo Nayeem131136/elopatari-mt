@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { getImage } from "@/components/ProductCard";
-import { categorySizes } from "@/data/products";
+import { categorySizes, products as allProducts, giftBoxExtras } from "@/data/products";
+import { getItemKey, calcGiftBoxPrice } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -159,12 +160,14 @@ const Checkout = () => {
             {step === 1 && (
               <div className="space-y-4 animate-in fade-in duration-300">
                 <h2 className="font-display text-2xl font-bold text-foreground mb-4">🛒 কার্ট রিভিউ</h2>
-                {items.map(({ product, quantity, selectedSize }) => {
+                {items.map((item) => {
+                  const { product, quantity, selectedSize, giftBox } = item;
                   const sizeLabel = selectedSize
                     ? categorySizes[product.category]?.find((s) => s.value === selectedSize)?.label
                     : null;
+                  const itemPrice = giftBox ? calcGiftBoxPrice(giftBox) : product.price;
                   return (
-                    <div key={selectedSize ? `${product.id}__${selectedSize}` : product.id} className="flex gap-4 p-4 bg-card rounded-xl border border-border/50">
+                    <div key={getItemKey(item)} className="flex gap-4 p-4 bg-card rounded-xl border border-border/50">
                       <img src={getImage(product.image)} alt={product.name} className="w-16 h-16 object-cover rounded-lg" />
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-foreground text-sm">{product.name}</h3>
@@ -172,9 +175,24 @@ const Checkout = () => {
                         {sizeLabel && (
                           <span className="inline-block text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full mt-0.5">📐 {sizeLabel}</span>
                         )}
+                        {giftBox && (
+                          <div className="flex flex-wrap gap-1 mt-0.5">
+                            {giftBox.categories.map((c) => (
+                              <span key={c.categoryId} className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">🎁 {c.categoryName} ({c.sizeLabel})</span>
+                            ))}
+                            {giftBox.crochetProductIds.map((pid) => {
+                              const p = allProducts.find((pr) => pr.id === pid);
+                              return p ? <span key={pid} className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">🧶 {p.name}</span> : null;
+                            })}
+                            {giftBox.extraIds.map((eid) => {
+                              const e = giftBoxExtras.find((ex) => ex.id === eid);
+                              return e ? <span key={eid} className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full">{e.emoji} {e.name}</span> : null;
+                            })}
+                          </div>
+                        )}
                         <p className="text-xs text-muted-foreground">পরিমাণ: {quantity}</p>
                       </div>
-                      <p className="font-bold text-foreground whitespace-nowrap">৳{product.price * quantity}</p>
+                      <p className="font-bold text-foreground whitespace-nowrap">৳{itemPrice * quantity}</p>
                     </div>
                   );
                 })}

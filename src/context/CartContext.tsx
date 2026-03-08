@@ -1,9 +1,18 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { Product, products as allProducts, giftBoxExtras, giftBoxPackagingCharge } from "@/data/products";
 
+export interface GiftBoxCategoryItem {
+  categoryId: string;    // e.g. "photo-frame"
+  categoryName: string;
+  sizeValue: string;
+  sizeLabel: string;
+  price: number;
+}
+
 export interface GiftBoxSelection {
-  productIds: string[];   // shop products included
-  extraIds: string[];     // extras like chocolate, card etc.
+  categories: GiftBoxCategoryItem[];  // frame/embroidery/canvas with size
+  crochetProductIds: string[];        // crochet products by id
+  extraIds: string[];                 // extras like chocolate, card etc.
 }
 
 export interface CartItem {
@@ -34,8 +43,26 @@ const getCartKey = (productId: string, size?: string, giftBox?: GiftBoxSelection
 };
 
 export const getItemKey = (item: CartItem) => {
-  if (item.giftBox) return `${item.product.id}__gift__${item.giftBox.productIds.join(",")}_${item.giftBox.extraIds.join(",")}`;
+  if (item.giftBox) {
+    const catKey = item.giftBox.categories.map(c => `${c.categoryId}:${c.sizeValue}`).join(",");
+    const crochetKey = item.giftBox.crochetProductIds.join(",");
+    const extraKey = item.giftBox.extraIds.join(",");
+    return `${item.product.id}__gift__${catKey}_${crochetKey}_${extraKey}`;
+  }
   return item.selectedSize ? `${item.product.id}__${item.selectedSize}` : item.product.id;
+};
+
+export const calcGiftBoxPrice = (giftBox: GiftBoxSelection) => {
+  return giftBoxPackagingCharge
+    + giftBox.categories.reduce((s, c) => s + c.price, 0)
+    + giftBox.crochetProductIds.reduce((s, pid) => {
+        const p = allProducts.find((pr) => pr.id === pid);
+        return s + (p?.price || 0);
+      }, 0)
+    + giftBox.extraIds.reduce((s, eid) => {
+        const e = giftBoxExtras.find((ex) => ex.id === eid);
+        return s + (e?.price || 0);
+      }, 0);
 };
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -84,18 +111,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
   const totalPrice = items.reduce((sum, i) => {
-    if (i.giftBox) {
-      const boxPrice = giftBoxPackagingCharge
-        + (i.giftBox.productIds || []).reduce((s, pid) => {
-            const p = allProducts.find((pr) => pr.id === pid);
-            return s + (p?.price || 0);
-          }, 0)
-        + (i.giftBox.extraIds || []).reduce((s, eid) => {
-            const e = giftBoxExtras.find((ex) => ex.id === eid);
-            return s + (e?.price || 0);
-          }, 0);
-      return sum + boxPrice * i.quantity;
-    }
+    if (i.giftBox) return sum + calcGiftBoxPrice(i.giftBox) * i.quantity;
     return sum + i.product.price * i.quantity;
   }, 0);
 
