@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { ShoppingCart, Heart, Search, Menu, X, User } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ShoppingCart, Heart, Search, Menu, X, User, LogOut, Shield } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const navLinks = [
   { to: "/", label: "Home" },
@@ -14,7 +16,15 @@ const navLinks = [
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { totalItems, wishlist } = useCart();
+  const { user, isAdmin, signOut } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("লগআউট হয়েছে");
+    navigate("/");
+  };
 
   return (
     <nav className="glass-nav fixed top-0 left-0 right-0 z-50">
@@ -41,6 +51,16 @@ const Navbar = () => {
                 {link.label}
               </Link>
             ))}
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className={`text-sm font-medium transition-colors hover:text-primary flex items-center gap-1 ${
+                  location.pathname === "/admin" ? "text-primary" : "text-muted-foreground"
+                }`}
+              >
+                <Shield className="h-3.5 w-3.5" /> Admin
+              </Link>
+            )}
           </div>
 
           {/* Actions */}
@@ -64,17 +84,24 @@ const Navbar = () => {
               <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
                 <ShoppingCart className="h-5 w-5" />
                 {totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold animate-fade-in-up">
+                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
                     {totalItems}
                   </span>
                 )}
               </Button>
             </Link>
-            <Link to="/login" className="hidden sm:flex">
-              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
-                <User className="h-5 w-5" />
+
+            {user ? (
+              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary hidden sm:flex" onClick={handleSignOut} title="Logout">
+                <LogOut className="h-5 w-5" />
               </Button>
-            </Link>
+            ) : (
+              <Link to="/login" className="hidden sm:flex">
+                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
+                  <User className="h-5 w-5" />
+                </Button>
+              </Link>
+            )}
 
             {/* Mobile toggle */}
             <Button
@@ -90,7 +117,7 @@ const Navbar = () => {
 
         {/* Mobile Menu */}
         {mobileOpen && (
-          <div className="md:hidden pb-4 animate-fade-in-up">
+          <div className="md:hidden pb-4">
             {navLinks.map((link) => (
               <Link
                 key={link.to}
@@ -103,13 +130,31 @@ const Navbar = () => {
                 {link.label}
               </Link>
             ))}
-            <Link
-              to="/login"
-              onClick={() => setMobileOpen(false)}
-              className="block py-3 px-2 text-sm font-medium text-muted-foreground"
-            >
-              Login / Register
-            </Link>
+            {isAdmin && (
+              <Link
+                to="/admin"
+                onClick={() => setMobileOpen(false)}
+                className="block py-3 px-2 text-sm font-medium text-muted-foreground border-b border-border/30"
+              >
+                🛠️ Admin Panel
+              </Link>
+            )}
+            {user ? (
+              <button
+                onClick={() => { setMobileOpen(false); handleSignOut(); }}
+                className="block w-full text-left py-3 px-2 text-sm font-medium text-destructive"
+              >
+                Logout
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                onClick={() => setMobileOpen(false)}
+                className="block py-3 px-2 text-sm font-medium text-muted-foreground"
+              >
+                Login / Register
+              </Link>
+            )}
           </div>
         )}
       </div>
