@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
-import { Product } from "@/data/products";
+import { Product, products as allProducts, giftBoxExtras, giftBoxPackagingCharge } from "@/data/products";
 
 export interface GiftBoxSelection {
   productIds: string[];   // shop products included
