@@ -13,6 +13,35 @@ export interface Product {
   featured: boolean;
 }
 
+export type SizeOption = {
+  label: string;
+  value: string;
+};
+
+// Categories that require size selection
+export const categorySizes: Record<string, SizeOption[]> = {
+  "photo-frame": [
+    { label: '6" x 4"', value: "6x4" },
+    { label: '8" x 6"', value: "8x6" },
+    { label: '10" x 8"', value: "10x8" },
+    { label: '12" x 10"', value: "12x10" },
+  ],
+  embroidery: [
+    { label: '6" Hoop', value: "6inch" },
+    { label: '8" Hoop', value: "8inch" },
+    { label: '10" Hoop', value: "10inch" },
+    { label: '12" Hoop', value: "12inch" },
+  ],
+  canvas: [
+    { label: '8" x 10"', value: "8x10" },
+    { label: '12" x 16"', value: "12x16" },
+    { label: '16" x 20"', value: "16x20" },
+    { label: '20" x 24"', value: "20x24" },
+  ],
+};
+
+export const requiresSize = (category: string) => !!categorySizes[category];
+
 export const categories = [
   { id: "photo-frame", name: "Photo Frame", nameBn: "ফটো ফ্রেম", icon: "🖼️" },
   { id: "embroidery", name: "Embroidery Hoop Art", nameBn: "এমব্রয়ডারি হুপ আর্ট", icon: "🧵" },

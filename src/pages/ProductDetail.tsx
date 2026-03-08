@@ -1,9 +1,9 @@
 import { useParams, Link } from "react-router-dom";
-import { products } from "@/data/products";
+import { products, categorySizes, requiresSize } from "@/data/products";
 import { getImage } from "@/components/ProductCard";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
-import { Heart, ShoppingCart, Star, Minus, Plus, ArrowLeft } from "lucide-react";
+import { Heart, ShoppingCart, Star, Minus, Plus, ArrowLeft, Ruler } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import ProductCard from "@/components/ProductCard";
@@ -13,6 +13,7 @@ const ProductDetail = () => {
   const product = products.find((p) => p.id === id);
   const { addToCart, wishlist, toggleWishlist } = useCart();
   const [qty, setQty] = useState(1);
+  const [selectedSize, setSelectedSize] = useState<string>("");
 
   if (!product) {
     return (
@@ -28,10 +29,16 @@ const ProductDetail = () => {
 
   const isWished = wishlist.includes(product.id);
   const related = products.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
+  const needsSize = requiresSize(product.category);
+  const sizes = categorySizes[product.category] || [];
 
   const handleAdd = () => {
-    for (let i = 0; i < qty; i++) addToCart(product);
-    toast.success(`${qty}x ${product.name} added to cart!`);
+    if (needsSize && !selectedSize) {
+      toast.error("সাইজ সিলেক্ট করুন!");
+      return;
+    }
+    for (let i = 0; i < qty; i++) addToCart(product, selectedSize || undefined);
+    toast.success(`${qty}x ${product.name}${selectedSize ? ` (${sizes.find(s => s.value === selectedSize)?.label})` : ""} added to cart!`);
   };
 
   return (
@@ -69,7 +76,34 @@ const ProductDetail = () => {
               )}
             </div>
 
-            <p className="text-muted-foreground mb-8 leading-relaxed">{product.description}</p>
+            <p className="text-muted-foreground mb-6 leading-relaxed">{product.description}</p>
+
+            {/* Size Selection */}
+            {needsSize && (
+              <div className="mb-6">
+                <label className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
+                  <Ruler className="h-4 w-4 text-primary" /> সাইজ সিলেক্ট করুন <span className="text-destructive">*</span>
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {sizes.map((size) => (
+                    <button
+                      key={size.value}
+                      onClick={() => setSelectedSize(size.value)}
+                      className={`px-4 py-2.5 rounded-lg border-2 text-sm font-medium transition-all ${
+                        selectedSize === size.value
+                          ? "border-primary bg-primary/10 text-primary shadow-sm"
+                          : "border-border text-foreground hover:border-primary/40 hover:bg-muted/50"
+                      }`}
+                    >
+                      {size.label}
+                    </button>
+                  ))}
+                </div>
+                {!selectedSize && (
+                  <p className="text-xs text-muted-foreground mt-2">⚠️ কার্টে যোগ করতে সাইজ বাছুন</p>
+                )}
+              </div>
+            )}
 
             <div className="flex items-center gap-4 mb-6">
               <div className="flex items-center border border-border rounded-full">
@@ -82,7 +116,7 @@ const ProductDetail = () => {
                 </Button>
               </div>
 
-              <span className={`text-sm font-medium ${product.inStock ? "text-green-600" : "text-destructive"}`}>
+              <span className={`text-sm font-medium ${product.inStock ? "text-accent-foreground" : "text-destructive"}`}>
                 {product.inStock ? "✓ In Stock" : "✕ Out of Stock"}
               </span>
             </div>
