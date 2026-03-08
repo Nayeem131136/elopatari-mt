@@ -390,6 +390,11 @@ const AdminPanel = () => {
             })}
           </div>
         )}
+
+        {/* User Role Management */}
+        <div className="mt-12 border-t border-border pt-8">
+          <UserRoleManager />
+        </div>
       </div>
     </div>
   );
