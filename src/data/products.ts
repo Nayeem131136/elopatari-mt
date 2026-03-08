@@ -13,79 +13,12 @@ export interface Product {
   featured: boolean;
 }
 
-export interface CustomizationField {
-  key: string;
-  label: string;
-  labelBn: string;
-  type: "text" | "textarea" | "date" | "file" | "select";
-  required?: boolean;
-  placeholder?: string;
-  options?: string[];
-}
-
-export interface Category {
-  id: string;
-  name: string;
-  nameBn: string;
-  icon: string;
-  customizationFields: CustomizationField[];
-}
-
-const commonFields: CustomizationField[] = [
-  { key: "customerName", label: "Name on Product", labelBn: "প্রোডাক্টে নাম", type: "text", required: true, placeholder: "e.g. Rahima" },
-  { key: "date", label: "Date / Occasion", labelBn: "তারিখ / উপলক্ষ", type: "text", placeholder: "e.g. 14 Feb, Birthday" },
-  { key: "design", label: "Design Preference", labelBn: "ডিজাইন পছন্দ", type: "select", options: ["Floral", "Minimal", "Vintage", "Cute/Cartoon", "Custom (describe in notes)"] },
-  { key: "note", label: "Special Note / Message", labelBn: "বিশেষ নোট / মেসেজ", type: "textarea", placeholder: "Any message or instruction..." },
-];
-
-export const categories: Category[] = [
-  {
-    id: "photo-frame",
-    name: "Photo Frame",
-    nameBn: "ফটো ফ্রেম",
-    icon: "🖼️",
-    customizationFields: [
-      { key: "photo", label: "Your Photo", labelBn: "আপনার ছবি", type: "file", required: true },
-      ...commonFields,
-    ],
-  },
-  {
-    id: "embroidery",
-    name: "Embroidery Hoop Art",
-    nameBn: "এমব্রয়ডারি হুপ আর্ট",
-    icon: "🧵",
-    customizationFields: [...commonFields],
-  },
-  {
-    id: "canvas",
-    name: "Canvas Art",
-    nameBn: "ক্যানভাস আর্ট",
-    icon: "🎨",
-    customizationFields: [
-      { key: "photo", label: "Reference Photo (optional)", labelBn: "রেফারেন্স ছবি (ঐচ্ছিক)", type: "file" },
-      ...commonFields,
-    ],
-  },
-  {
-    id: "crochet",
-    name: "Crochet",
-    nameBn: "ক্রোশে",
-    icon: "🧶",
-    customizationFields: [
-      { key: "color", label: "Preferred Color", labelBn: "পছন্দের রঙ", type: "text", placeholder: "e.g. Pink, Blue" },
-      ...commonFields,
-    ],
-  },
-  {
-    id: "custom",
-    name: "Custom Gifts",
-    nameBn: "কাস্টম গিফট",
-    icon: "🎁",
-    customizationFields: [
-      { key: "photo", label: "Your Photo", labelBn: "আপনার ছবি", type: "file" },
-      ...commonFields,
-    ],
-  },
+export const categories = [
+  { id: "photo-frame", name: "Photo Frame", nameBn: "ফটো ফ্রেম", icon: "🖼️" },
+  { id: "embroidery", name: "Embroidery Hoop Art", nameBn: "এমব্রয়ডারি হুপ আর্ট", icon: "🧵" },
+  { id: "canvas", name: "Canvas Art", nameBn: "ক্যানভাস আর্ট", icon: "🎨" },
+  { id: "crochet", name: "Crochet", nameBn: "ক্রোশে", icon: "🧶" },
+  { id: "custom", name: "Custom Gifts", nameBn: "কাস্টম গিফট", icon: "🎁" },
 ];
 
 export const products: Product[] = [

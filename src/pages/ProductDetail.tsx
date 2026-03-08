@@ -1,20 +1,18 @@
 import { useParams, Link } from "react-router-dom";
-import { products, categories } from "@/data/products";
+import { products } from "@/data/products";
 import { getImage } from "@/components/ProductCard";
-import { useCart, CustomizationData } from "@/context/CartContext";
+import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import { Heart, ShoppingCart, Star, Minus, Plus, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import ProductCard from "@/components/ProductCard";
-import CustomizationForm from "@/components/CustomizationForm";
 
 const ProductDetail = () => {
   const { id } = useParams();
   const product = products.find((p) => p.id === id);
   const { addToCart, wishlist, toggleWishlist } = useCart();
   const [qty, setQty] = useState(1);
-  const [customization, setCustomization] = useState<CustomizationData>({});
 
   if (!product) {
     return (
@@ -28,26 +26,12 @@ const ProductDetail = () => {
     );
   }
 
-  const category = categories.find((c) => c.id === product.category);
-  const customFields = category?.customizationFields || [];
   const isWished = wishlist.includes(product.id);
   const related = products.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
 
   const handleAdd = () => {
-    // Validate required fields
-    const missing = customFields.filter(
-      (f) => f.required && !customization[f.key]
-    );
-    if (missing.length > 0) {
-      toast.error(`Please fill: ${missing.map((f) => f.label).join(", ")}`);
-      return;
-    }
-
-    for (let i = 0; i < qty; i++) {
-      addToCart(product, Object.keys(customization).length > 0 ? customization : undefined);
-    }
+    for (let i = 0; i < qty; i++) addToCart(product);
     toast.success(`${qty}x ${product.name} added to cart!`);
-    setCustomization({});
   };
 
   return (
@@ -64,7 +48,7 @@ const ProductDetail = () => {
           </div>
 
           {/* Info */}
-          <div className="flex flex-col">
+          <div className="flex flex-col justify-center">
             <p className="text-sm text-muted-foreground capitalize mb-2">{product.category.replace("-", " ")}</p>
             <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-1">{product.name}</h1>
             <p className="text-lg text-muted-foreground mb-4">{product.nameBn}</p>
@@ -85,18 +69,7 @@ const ProductDetail = () => {
               )}
             </div>
 
-            <p className="text-muted-foreground mb-6 leading-relaxed">{product.description}</p>
-
-            {/* Customization Form */}
-            {customFields.length > 0 && (
-              <div className="mb-6">
-                <CustomizationForm
-                  fields={customFields}
-                  value={customization}
-                  onChange={setCustomization}
-                />
-              </div>
-            )}
+            <p className="text-muted-foreground mb-8 leading-relaxed">{product.description}</p>
 
             <div className="flex items-center gap-4 mb-6">
               <div className="flex items-center border border-border rounded-full">
