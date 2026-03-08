@@ -92,9 +92,16 @@ const Navbar = () => {
             </Link>
 
             {user ? (
-              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary hidden sm:flex" onClick={handleSignOut} title="Logout">
-                <LogOut className="h-5 w-5" />
-              </Button>
+              <div className="hidden sm:flex items-center gap-1">
+                <Link to="/profile">
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary" title="Profile">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </Link>
+                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary" onClick={handleSignOut} title="Logout">
+                  <LogOut className="h-5 w-5" />
+                </Button>
+              </div>
             ) : (
               <Link to="/login" className="hidden sm:flex">
                 <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
