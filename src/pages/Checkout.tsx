@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { getImage } from "@/components/ProductCard";
-import { categorySizes } from "@/data/products";
+import { categorySizes, products as allProducts, giftBoxExtras } from "@/data/products";
+import { getItemKey, calcGiftBoxPrice } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
