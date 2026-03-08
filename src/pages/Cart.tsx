@@ -41,18 +41,7 @@ const Cart = () => {
                 ? categorySizes[product.category]?.find((s) => s.value === selectedSize)?.label
                 : null;
 
-              // Calculate gift box total price
-              let itemPrice = product.category === "custom" && giftBox
-                ? giftBoxPackagingCharge
-                  + (giftBox.productIds || []).reduce((sum, pid) => {
-                      const p = allProducts.find((pr) => pr.id === pid);
-                      return sum + (p?.price || 0);
-                    }, 0)
-                  + (giftBox.extraIds || []).reduce((sum, eid) => {
-                      const e = giftBoxExtras.find((ex) => ex.id === eid);
-                      return sum + (e?.price || 0);
-                    }, 0)
-                : product.price;
+              let itemPrice = giftBox ? calcGiftBoxPrice(giftBox) : product.price;
 
               return (
                 <div key={cartKey} className="flex gap-4 p-4 bg-card rounded-xl border border-border/50">
@@ -70,14 +59,19 @@ const Cart = () => {
                       </span>
                     )}
                     {giftBox && (
-                      <div className="mt-1 space-y-0.5">
-                        {(giftBox.productIds || []).map((pid) => {
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {giftBox.categories.map((c) => (
+                          <span key={c.categoryId} className="inline-block text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">
+                            🎁 {c.categoryName} ({c.sizeLabel})
+                          </span>
+                        ))}
+                        {giftBox.crochetProductIds.map((pid) => {
                           const p = allProducts.find((pr) => pr.id === pid);
-                          return p ? <span key={pid} className="inline-block mr-1 text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">🎁 {p.name}</span> : null;
+                          return p ? <span key={pid} className="inline-block text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">🧶 {p.name}</span> : null;
                         })}
-                        {(giftBox.extraIds || []).map((eid) => {
+                        {giftBox.extraIds.map((eid) => {
                           const e = giftBoxExtras.find((ex) => ex.id === eid);
-                          return e ? <span key={eid} className="inline-block mr-1 text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full">{e.emoji} {e.name}</span> : null;
+                          return e ? <span key={eid} className="inline-block text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full">{e.emoji} {e.name}</span> : null;
                         })}
                       </div>
                     )}
