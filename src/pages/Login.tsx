@@ -2,16 +2,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
+import { useState } from "react";
 
 const Login = () => {
+  const [isSignUp, setIsSignUp] = useState(false);
+
   return (
     <div className="pt-24 pb-16 min-h-screen flex items-center justify-center">
       <div className="w-full max-w-md mx-auto px-4">
         <div className="text-center mb-8">
           <span className="text-4xl block mb-3">🎁</span>
-          <h1 className="font-display text-3xl font-bold text-foreground mb-2">Welcome Back</h1>
-          <p className="text-muted-foreground">Sign in to এলোপাতাড়ি - MT</p>
+          <h1 className="font-display text-3xl font-bold text-foreground mb-2">
+            {isSignUp ? "Create Account" : "Welcome Back"}
+          </h1>
+          <p className="text-muted-foreground">
+            {isSignUp ? "এলোপাতাড়ি - MT তে নতুন অ্যাকাউন্ট তৈরি করুন" : "Sign in to এলোপাতাড়ি - MT"}
+          </p>
         </div>
 
         <div className="bg-card rounded-2xl border border-border/50 p-6 space-y-4">
@@ -34,11 +40,19 @@ const Login = () => {
               <div className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-card px-2 text-muted-foreground">or sign in with email</span>
+              <span className="bg-card px-2 text-muted-foreground">
+                {isSignUp ? "or sign up with email" : "or sign in with email"}
+              </span>
             </div>
           </div>
 
           <div className="space-y-3">
+            {isSignUp && (
+              <div>
+                <Label htmlFor="name">নাম</Label>
+                <Input id="name" type="text" placeholder="আপনার পুরো নাম" className="rounded-lg mt-1" />
+              </div>
+            )}
             <div>
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" placeholder="you@example.com" className="rounded-lg mt-1" />
@@ -47,20 +61,27 @@ const Login = () => {
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" placeholder="••••••••" className="rounded-lg mt-1" />
             </div>
+            {isSignUp && (
+              <div>
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Input id="confirm-password" type="password" placeholder="••••••••" className="rounded-lg mt-1" />
+              </div>
+            )}
           </div>
 
           <Button
             className="w-full rounded-full font-semibold btn-glow"
             onClick={() => toast.info("Authentication requires Lovable Cloud. Enable it to add user login.")}
           >
-            Sign In
+            {isSignUp ? "Sign Up" : "Sign In"}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">
-            Don't have an account?{" "}
-            <Link to="/login" className="text-primary hover:underline font-medium">
-              Sign Up
-            </Link>
+            {isSignUp ? (
+              <>Already have an account?{" "}<button onClick={() => setIsSignUp(false)} className="text-primary hover:underline font-medium">Sign In</button></>
+            ) : (
+              <>Don't have an account?{" "}<button onClick={() => setIsSignUp(true)} className="text-primary hover:underline font-medium">Sign Up</button></>
+            )}
           </p>
         </div>
       </div>
