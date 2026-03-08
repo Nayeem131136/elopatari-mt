@@ -15,7 +15,7 @@ export interface CartItem {
 
 interface CartContextType {
   items: CartItem[];
-  addToCart: (product: Product, size?: string) => void;
+  addToCart: (product: Product, size?: string, giftBox?: GiftBoxSelection) => void;
   removeFromCart: (cartKey: string) => void;
   updateQuantity: (cartKey: string, quantity: number) => void;
   clearCart: () => void;
@@ -27,20 +27,33 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-// Unique key: productId + size
-const getCartKey = (productId: string, size?: string) => size ? `${productId}__${size}` : productId;
+// Unique key: productId + size (gift boxes always unique)
+const getCartKey = (productId: string, size?: string, giftBox?: GiftBoxSelection) => {
+  if (giftBox) return `${productId}__gift__${Date.now()}__${Math.random()}`;
+  return size ? `${productId}__${size}` : productId;
+};
+
+export const getItemKey = (item: CartItem) => {
+  if (item.giftBox) return `${item.product.id}__gift__${item.giftBox.productIds.join(",")}_${item.giftBox.extraIds.join(",")}`;
+  return item.selectedSize ? `${item.product.id}__${item.selectedSize}` : item.product.id;
+};
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
 
-  const addToCart = useCallback((product: Product, size?: string) => {
+  const addToCart = useCallback((product: Product, size?: string, giftBox?: GiftBoxSelection) => {
+    if (giftBox) {
+      // Gift boxes are always added as new items
+      setItems((prev) => [...prev, { product, quantity: 1, selectedSize: size, giftBox }]);
+      return;
+    }
     setItems((prev) => {
-      const key = getCartKey(product.id, size);
-      const existing = prev.find((i) => getCartKey(i.product.id, i.selectedSize) === key);
+      const key = size ? `${product.id}__${size}` : product.id;
+      const existing = prev.find((i) => getItemKey(i) === key);
       if (existing) {
         return prev.map((i) =>
-          getCartKey(i.product.id, i.selectedSize) === key ? { ...i, quantity: i.quantity + 1 } : i
+          getItemKey(i) === key ? { ...i, quantity: i.quantity + 1 } : i
         );
       }
       return [...prev, { product, quantity: 1, selectedSize: size }];
