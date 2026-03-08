@@ -42,6 +42,7 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/wishlist" element={<Wishlist />} />
               <Route path="/admin" element={<AdminPanel />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Footer />

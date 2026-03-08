@@ -147,12 +147,21 @@ const Navbar = () => {
               </Link>
             )}
             {user ? (
-              <button
-                onClick={() => { setMobileOpen(false); handleSignOut(); }}
-                className="block w-full text-left py-3 px-2 text-sm font-medium text-destructive"
-              >
-                Logout
-              </button>
+              <>
+                <Link
+                  to="/profile"
+                  onClick={() => setMobileOpen(false)}
+                  className="block py-3 px-2 text-sm font-medium text-muted-foreground border-b border-border/30"
+                >
+                  👤 My Profile
+                </Link>
+                <button
+                  onClick={() => { setMobileOpen(false); handleSignOut(); }}
+                  className="block w-full text-left py-3 px-2 text-sm font-medium text-destructive"
+                >
+                  Logout
+                </button>
+              </>
             ) : (
               <Link
                 to="/login"
