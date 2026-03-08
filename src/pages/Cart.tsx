@@ -3,29 +3,10 @@ import { useCart } from "@/context/CartContext";
 import { getImage } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2, ShoppingCart, ArrowLeft } from "lucide-react";
-import { useState } from "react";
 import { toast } from "sonner";
 
-const deliveryOptions = [
-  { id: "dhaka", label: "Inside Dhaka", labelBn: "ঢাকার ভেতরে", charge: 80 },
-  { id: "dhaka-sub", label: "Dhaka Sub Area", labelBn: "ঢাকার উপকণ্ঠ", charge: 100 },
-  { id: "outside", label: "Outside Dhaka (per kg)", labelBn: "ঢাকার বাইরে (প্রতি কেজি)", charge: 130 },
-];
-
 const Cart = () => {
-  const { items, updateQuantity, removeFromCart, totalPrice, clearCart } = useCart();
-  const [delivery, setDelivery] = useState("dhaka");
-  const [weight, setWeight] = useState(1);
-
-  const deliveryCharge = (() => {
-    const opt = deliveryOptions.find((d) => d.id === delivery)!;
-    if (delivery === "outside") {
-      return opt.charge + Math.max(0, weight - 1) * 20;
-    }
-    return opt.charge;
-  })();
-
-  const grandTotal = totalPrice + deliveryCharge;
+  const { items, updateQuantity, removeFromCart, totalPrice } = useCart();
 
   if (items.length === 0) {
     return (
@@ -99,59 +80,18 @@ const Cart = () => {
 
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Subtotal</span>
+                <span className="text-muted-foreground">Subtotal ({items.reduce((s, i) => s + i.quantity, 0)} items)</span>
                 <span className="font-semibold text-foreground">৳{totalPrice}</span>
-              </div>
-
-              {/* Delivery */}
-              <div>
-                <p className="text-muted-foreground mb-2">Delivery Area</p>
-                <div className="space-y-2">
-                  {deliveryOptions.map((opt) => (
-                    <label key={opt.id} className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="delivery"
-                        value={opt.id}
-                        checked={delivery === opt.id}
-                        onChange={() => setDelivery(opt.id)}
-                        className="accent-[hsl(var(--primary))]"
-                      />
-                      <span className="text-foreground">{opt.label}</span>
-                      <span className="text-muted-foreground ml-auto">৳{opt.charge}</span>
-                    </label>
-                  ))}
-                </div>
-                {delivery === "outside" && (
-                  <div className="mt-2 flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">Weight (kg):</span>
-                    <input
-                      type="number"
-                      min={1}
-                      value={weight}
-                      onChange={(e) => setWeight(Math.max(1, Number(e.target.value)))}
-                      className="w-16 border border-border rounded-md px-2 py-1 text-sm bg-transparent text-foreground"
-                    />
-                  </div>
-                )}
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Delivery Charge</span>
-                <span className="font-semibold text-foreground">৳{deliveryCharge}</span>
               </div>
 
               <div className="border-t border-border pt-3 flex justify-between text-base">
                 <span className="font-semibold text-foreground">Total</span>
-                <span className="font-bold text-primary text-lg">৳{grandTotal}</span>
+                <span className="font-bold text-primary text-lg">৳{totalPrice}</span>
               </div>
             </div>
 
             <Link to="/checkout">
-              <Button
-                className="w-full mt-6 rounded-full font-semibold btn-glow"
-                size="lg"
-              >
+              <Button className="w-full mt-6 rounded-full font-semibold btn-glow" size="lg">
                 Proceed to Checkout
               </Button>
             </Link>
