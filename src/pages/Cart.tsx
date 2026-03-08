@@ -34,45 +34,56 @@ const Cart = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Cart items */}
           <div className="lg:col-span-2 space-y-4">
-            {items.map(({ product, quantity }) => (
-              <div key={product.id} className="flex gap-4 p-4 bg-card rounded-xl border border-border/50">
-                <img
-                  src={getImage(product.image)}
-                  alt={product.name}
-                  className="w-20 h-20 md:w-24 md:h-24 object-cover rounded-lg"
-                />
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-foreground text-sm md:text-base">{product.name}</h3>
-                  <p className="text-xs text-muted-foreground">{product.nameBn}</p>
-                  <p className="font-bold text-foreground mt-1">৳{product.price}</p>
-                  <div className="flex items-center gap-3 mt-2">
-                    <div className="flex items-center border border-border rounded-full">
-                      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={() => updateQuantity(product.id, quantity - 1)}>
-                        <Minus className="h-3 w-3" />
-                      </Button>
-                      <span className="w-8 text-center text-sm font-semibold">{quantity}</span>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={() => updateQuantity(product.id, quantity + 1)}>
-                        <Plus className="h-3 w-3" />
+            {items.map(({ product, quantity, selectedSize }) => {
+              const cartKey = selectedSize ? `${product.id}__${selectedSize}` : product.id;
+              const sizeLabel = selectedSize
+                ? categorySizes[product.category]?.find((s) => s.value === selectedSize)?.label
+                : null;
+              return (
+                <div key={cartKey} className="flex gap-4 p-4 bg-card rounded-xl border border-border/50">
+                  <img
+                    src={getImage(product.image)}
+                    alt={product.name}
+                    className="w-20 h-20 md:w-24 md:h-24 object-cover rounded-lg"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-foreground text-sm md:text-base">{product.name}</h3>
+                    <p className="text-xs text-muted-foreground">{product.nameBn}</p>
+                    {sizeLabel && (
+                      <span className="inline-block mt-1 text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">
+                        📐 {sizeLabel}
+                      </span>
+                    )}
+                    <p className="font-bold text-foreground mt-1">৳{product.price}</p>
+                    <div className="flex items-center gap-3 mt-2">
+                      <div className="flex items-center border border-border rounded-full">
+                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={() => updateQuantity(cartKey, quantity - 1)}>
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <span className="w-8 text-center text-sm font-semibold">{quantity}</span>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={() => updateQuantity(cartKey, quantity + 1)}>
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-destructive hover:text-destructive"
+                        onClick={() => {
+                          removeFromCart(cartKey);
+                          toast("Item removed from cart");
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-destructive hover:text-destructive"
-                      onClick={() => {
-                        removeFromCart(product.id);
-                        toast("Item removed from cart");
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-foreground">৳{product.price * quantity}</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-foreground">৳{product.price * quantity}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Summary */}
