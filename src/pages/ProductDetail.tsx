@@ -163,29 +163,35 @@ const ProductDetail = () => {
                     <Package className="h-4 w-4 text-primary" /> প্রোডাক্ট বাছুন (শপ থেকে)
                   </label>
                   <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto pr-1">
-                    {boxProducts.map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => toggleProduct(p.id)}
-                        className={`flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all ${
-                          selectedProducts.includes(p.id)
-                            ? "border-primary bg-primary/5 shadow-sm"
-                            : "border-border hover:border-primary/30"
-                        }`}
-                      >
-                        <img src={getImage(p.image)} alt={p.name} className="w-10 h-10 rounded-lg object-cover" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">{p.name}</p>
-                          <p className="text-xs text-muted-foreground">{p.nameBn}</p>
-                        </div>
-                        <span className="text-sm font-bold text-foreground whitespace-nowrap">৳{p.price}</span>
-                        {selectedProducts.includes(p.id) && (
-                          <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-                            <Check className="h-3 w-3 text-primary-foreground" />
+                    {boxProducts.map((p) => {
+                      const pSizes = categorySizes[p.category];
+                      return (
+                        <button
+                          key={p.id}
+                          onClick={() => toggleProduct(p.id)}
+                          className={`flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all ${
+                            selectedProducts.includes(p.id)
+                              ? "border-primary bg-primary/5 shadow-sm"
+                              : "border-border hover:border-primary/30"
+                          }`}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground">{p.name}</p>
+                            {pSizes && (
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                সাইজ: {pSizes.map((s) => s.label).join(", ")}
+                              </p>
+                            )}
                           </div>
-                        )}
-                      </button>
-                    ))}
+                          <span className="text-sm font-bold text-foreground whitespace-nowrap">৳{p.price}</span>
+                          {selectedProducts.includes(p.id) && (
+                            <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                              <Check className="h-3 w-3 text-primary-foreground" />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
