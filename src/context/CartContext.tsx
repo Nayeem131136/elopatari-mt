@@ -83,7 +83,21 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
-  const totalPrice = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
+  const totalPrice = items.reduce((sum, i) => {
+    if (i.giftBox) {
+      const boxPrice = giftBoxPackagingCharge
+        + (i.giftBox.productIds || []).reduce((s, pid) => {
+            const p = allProducts.find((pr) => pr.id === pid);
+            return s + (p?.price || 0);
+          }, 0)
+        + (i.giftBox.extraIds || []).reduce((s, eid) => {
+            const e = giftBoxExtras.find((ex) => ex.id === eid);
+            return s + (e?.price || 0);
+          }, 0);
+      return sum + boxPrice * i.quantity;
+    }
+    return sum + i.product.price * i.quantity;
+  }, 0);
 
   return (
     <CartContext.Provider
