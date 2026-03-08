@@ -17,6 +17,7 @@ import About from "./pages/About";
 import Login from "./pages/Login";
 import Wishlist from "./pages/Wishlist";
 import AdminPanel from "./pages/AdminPanel";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/wishlist" element={<Wishlist />} />
               <Route path="/admin" element={<AdminPanel />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Footer />
