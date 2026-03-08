@@ -1,10 +1,11 @@
-import { products } from "@/data/products";
+import { useProducts } from "@/hooks/useProductData";
 import ProductCard from "@/components/ProductCard";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
 const FeaturedProducts = () => {
+  const { products } = useProducts();
   const featured = products.filter((p) => p.featured);
 
   return (

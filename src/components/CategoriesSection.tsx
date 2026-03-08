@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { categories } from "@/data/products";
+import { useCategories } from "@/hooks/useProductData";
 
 import productFrame from "@/assets/product-frame.jpg";
 import productEmbroidery from "@/assets/product-embroidery.jpg";
@@ -16,6 +16,8 @@ const categoryImages: Record<string, string> = {
 };
 
 const CategoriesSection = () => {
+  const { categories } = useCategories();
+
   return (
     <section className="py-16 md:py-24 bg-secondary/30">
       <div className="container mx-auto px-4">
@@ -32,7 +34,7 @@ const CategoriesSection = () => {
               className="category-card group aspect-square"
             >
               <img
-                src={categoryImages[cat.id]}
+                src={categoryImages[cat.id] || productCustom}
                 alt={cat.name}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />

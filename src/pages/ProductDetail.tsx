@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
-import { products, categorySizes, requiresSize, giftBoxExtras, giftBoxPackagingCharge, categories } from "@/data/products";
+import { categorySizes, requiresSize, giftBoxExtras, giftBoxPackagingCharge } from "@/data/products";
 import { getImage } from "@/components/ProductCard";
+import { useProducts } from "@/hooks/useProductData";
 import { useCart, GiftBoxCategoryItem, calcGiftBoxPrice } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import { Heart, ShoppingCart, Star, Minus, Plus, ArrowLeft, Ruler, Package, Check, ChevronDown } from "lucide-react";
@@ -17,6 +18,7 @@ const sizedCategories = [
 
 const ProductDetail = () => {
   const { id } = useParams();
+  const { products } = useProducts();
   const product = products.find((p) => p.id === id);
   const { addToCart, wishlist, toggleWishlist } = useCart();
   const [qty, setQty] = useState(1);
