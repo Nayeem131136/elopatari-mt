@@ -147,16 +147,17 @@ const Cart = () => {
               </div>
             </div>
 
-            <Button
-              className="w-full mt-6 rounded-full font-semibold btn-glow"
-              size="lg"
-              onClick={() => toast.info("Checkout requires authentication. Please connect Lovable Cloud to enable payments.")}
-            >
-              Proceed to Checkout
-            </Button>
+            <Link to="/checkout">
+              <Button
+                className="w-full mt-6 rounded-full font-semibold btn-glow"
+                size="lg"
+              >
+                Proceed to Checkout
+              </Button>
+            </Link>
 
             <p className="text-xs text-muted-foreground text-center mt-3">
-              Pay via bKash or Nagad to confirm your order
+              bKash বা Nagad এ পে করে অর্ডার কনফার্ম করুন
             </p>
           </div>
         </div>
