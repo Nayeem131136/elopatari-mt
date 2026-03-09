@@ -177,33 +177,43 @@ const VariantManager = ({ productId }: Props) => {
       <div className="space-y-2 max-h-80 overflow-y-auto">
         {variants.map((v, i) => (
           <div key={i} className="flex items-center gap-2 p-2 bg-card rounded-lg border border-border/50">
-            <Select value={v.color} onValueChange={(val) => updateRow(i, "color", val)}>
-              <SelectTrigger className="w-24 h-8 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="black">⬛ Black</SelectItem>
-                <SelectItem value="white">⬜ White</SelectItem>
-                <SelectItem value="Default">🎨 Default (No color)</SelectItem>
-              </SelectContent>
-            </Select>
+            {!isEmbroidery && (
+              <Select value={v.color} onValueChange={(val) => updateRow(i, "color", val)}>
+                <SelectTrigger className="w-24 h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="black">⬛ Black</SelectItem>
+                  <SelectItem value="white">⬜ White</SelectItem>
+                  <SelectItem value="Default">🎨 Default (No color)</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
             <Select value={v.size_label} onValueChange={(val) => updateRow(i, "size_label", val)}>
               <SelectTrigger className="flex-1 h-8 text-xs">
                 <SelectValue placeholder="সাইজ বাছুন" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__separator_rect" disabled>— Rectangular —</SelectItem>
-                {predefinedSizes.rectangular.map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
-                ))}
-                <SelectItem value="__separator_sq" disabled>— Square —</SelectItem>
-                {predefinedSizes.square.map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
-                ))}
-                <SelectItem value="__separator_emb" disabled>— Embroidery —</SelectItem>
-                {predefinedSizes.embroidery.map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
-                ))}
+                {isEmbroidery ? (
+                  predefinedSizes.embroidery.map((s) => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))
+                ) : (
+                  <>
+                    <SelectItem value="__separator_rect" disabled>— Rectangular —</SelectItem>
+                    {predefinedSizes.rectangular.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                    <SelectItem value="__separator_sq" disabled>— Square —</SelectItem>
+                    {predefinedSizes.square.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                    <SelectItem value="__separator_emb" disabled>— Embroidery —</SelectItem>
+                    {predefinedSizes.embroidery.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </>
+                )}
               </SelectContent>
             </Select>
             <Input
