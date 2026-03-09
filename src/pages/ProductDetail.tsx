@@ -265,7 +265,7 @@ const ProductDetail = () => {
             )}
 
             {/* Size Selection (variant-based) */}
-            {hasVariants && selectedColor && colorSizes.length > 0 && (
+            {hasVariants && (isSingleColor || selectedColor) && colorSizes.length > 0 && (
               <div className="mb-6">
                 <label className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
                   <Ruler className="h-4 w-4 text-primary" /> সাইজ সিলেক্ট করুন <span className="text-destructive">*</span>
