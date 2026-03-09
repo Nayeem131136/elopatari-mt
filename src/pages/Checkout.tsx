@@ -101,9 +101,71 @@ const Checkout = () => {
     return true;
   };
 
-  const handleSubmitOrder = () => {
+  const handleSubmitOrder = async () => {
     if (!validateStep3()) return;
-    setShowConfirmation(true);
+    if (!user) { toast.error("লগইন করুন!"); return; }
+
+    setSubmittingOrder(true);
+    try {
+      const deliveryOpt = deliveryOptions.find((d) => d.id === delivery);
+      const delCharge = delivery === "outside" ? (deliveryOpt?.charge || 130) * weight : (deliveryOpt?.charge || 80);
+      const subtotal = totalPrice;
+      const total = subtotal + delCharge;
+      const amountPaid = paymentType === "full" ? total : delCharge;
+      const cod = paymentType === "full" ? 0 : subtotal;
+
+      // Insert order
+      const { data: orderData, error: orderError } = await supabase
+        .from("orders")
+        .insert({
+          user_id: user.id,
+          customer_name: name,
+          customer_phone: phone,
+          customer_whatsapp: whatsapp || null,
+          customer_telegram: telegram || null,
+          customer_address: address,
+          customer_note: note || null,
+          delivery_area: delivery,
+          delivery_charge: delCharge,
+          subtotal,
+          total,
+          payment_type: paymentType,
+          payment_method: paymentMethod,
+          trx_id: `${trxId} (last4: ${senderLast4})`,
+          amount_paid: amountPaid,
+          cash_on_delivery: cod,
+          status: "pending",
+        })
+        .select("id")
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Insert order items
+      const orderItems = items.map((item) => {
+        const price = item.giftBox ? calcGiftBoxPrice(item.giftBox) : (item.variantPrice ?? item.product.price);
+        return {
+          order_id: orderData.id,
+          product_name: item.product.name,
+          product_name_bn: item.product.nameBn || null,
+          product_category: item.product.category,
+          selected_size: item.selectedSize || null,
+          unit_price: price,
+          quantity: item.quantity,
+          total_price: price * item.quantity,
+          gift_box_details: item.giftBox ? JSON.parse(JSON.stringify(item.giftBox)) : null,
+        };
+      });
+
+      const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
+      if (itemsError) throw itemsError;
+
+      setShowConfirmation(true);
+    } catch (err: any) {
+      console.error("Order error:", err);
+      toast.error("অর্ডার সাবমিট করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+    }
+    setSubmittingOrder(false);
   };
 
   const handleConfirmClose = () => {
