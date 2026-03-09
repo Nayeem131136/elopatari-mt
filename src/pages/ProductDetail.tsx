@@ -136,14 +136,15 @@ const ProductDetail = () => {
   const handleAdd = () => {
     // Variant-based products: must select color and size
     if (hasVariants) {
-      if (!selectedColor) { toast.error("কালার সিলেক্ট করুন!"); return; }
+      if (!isSingleColor && !selectedColor) { toast.error("কালার সিলেক্ট করুন!"); return; }
       if (!selectedSize) { toast.error("সাইজ সিলেক্ট করুন!"); return; }
       if (!currentVariant) { toast.error("এই কম্বিনেশন পাওয়া যায়নি!"); return; }
+      const colorToUse = isSingleColor ? colors[0] : selectedColor;
       for (let i = 0; i < qty; i++) {
-        addToCart(product, selectedSize, undefined, selectedColor, currentVariant.price);
+        addToCart(product, selectedSize, undefined, colorToUse, currentVariant.price);
       }
-      const colorInfo = colorLabels[selectedColor]?.labelBn || selectedColor;
-      toast.success(`${qty}x ${product.name} (${colorInfo}, ${selectedSize}) কার্টে যোগ হয়েছে!`);
+      const colorInfo = isSingleColor ? "" : ` (${colorLabels[colorToUse]?.labelBn || colorToUse})`;
+      toast.success(`${qty}x ${product.name}${colorInfo} ${selectedSize} কার্টে যোগ হয়েছে!`);
       return;
     }
 
