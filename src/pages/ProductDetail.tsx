@@ -403,10 +403,24 @@ const ProductDetail = () => {
                 </label>
 
                 {sizedCategories.map((cat) => {
-                  const catSizes = categorySizes[cat.id] || [];
+                  const catVars = giftBoxVariants[cat.id] || [];
                   const isEnabled = !!enabledCategories[cat.id];
                   const chosenSize = selectedCategories[cat.id];
-                  const baseProduct = products.find((p) => p.category === cat.id);
+                  const isCatCanvas = cat.id === "canvas";
+                  const catShape = giftBoxShapes[cat.id] || "";
+
+                  // For canvas, detect available shapes and filter by selected shape
+                  const catShapes = isCatCanvas
+                    ? [...new Set(catVars.map((v) => v.size_label.includes("(Round)") ? "Round" : v.size_label.includes("(Square)") ? "Square" : ""))]
+                        .filter(Boolean)
+                    : [];
+                  const filteredVars = isCatCanvas && catShape
+                    ? catVars.filter((v) => v.size_label.includes(`(${catShape})`))
+                    : catVars;
+
+                  // Price range display
+                  const minPrice = catVars.length > 0 ? Math.min(...catVars.map((v) => v.price)) : 0;
+                  const selectedVariant = catVars.find((v) => v.size_label === chosenSize);
 
                   return (
                     <div key={cat.id} className={`rounded-xl border-2 transition-all overflow-hidden ${isEnabled ? "border-primary bg-primary/5" : "border-border"}`}>
@@ -419,27 +433,63 @@ const ProductDetail = () => {
                           <p className="text-sm font-semibold text-foreground">{cat.name}</p>
                           <p className="text-xs text-muted-foreground">{cat.nameBn}</p>
                         </div>
-                        {baseProduct && <span className="text-sm font-bold text-foreground">৳{baseProduct.price}</span>}
+                        <span className="text-sm font-bold text-foreground">
+                          {selectedVariant ? `৳${selectedVariant.price}` : (minPrice > 0 ? `৳${minPrice}~` : "")}
+                        </span>
                         <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isEnabled ? "rotate-180" : ""}`} />
                       </button>
                       {isEnabled && (
-                        <div className="px-3.5 pb-3.5 pt-0">
-                          <p className="text-xs text-muted-foreground mb-2">সাইজ বাছুন: <span className="text-destructive">*</span></p>
-                          <div className="flex flex-wrap gap-2">
-                            {catSizes.map((size) => (
-                              <button
-                                key={size.value}
-                                onClick={() => selectCategorySize(cat.id, size.value)}
-                                className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
-                                  chosenSize === size.value
-                                    ? "border-primary bg-primary text-primary-foreground"
-                                    : "border-border text-foreground hover:border-primary/40"
-                                }`}
-                              >
-                                {size.label}
-                              </button>
-                            ))}
-                          </div>
+                        <div className="px-3.5 pb-3.5 pt-0 space-y-3">
+                          {/* Canvas shape selector */}
+                          {isCatCanvas && catShapes.length > 1 && (
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-2">শেপ বাছুন: <span className="text-destructive">*</span></p>
+                              <div className="flex gap-2">
+                                {catShapes.map((shape) => (
+                                  <button
+                                    key={shape}
+                                    onClick={() => {
+                                      setGiftBoxShapes((prev) => ({ ...prev, [cat.id]: shape }));
+                                      setSelectedCategories((prev) => { const n = { ...prev }; delete n[cat.id]; return n; });
+                                    }}
+                                    className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                                      catShape === shape
+                                        ? "border-primary bg-primary text-primary-foreground"
+                                        : "border-border text-foreground hover:border-primary/40"
+                                    }`}
+                                  >
+                                    {shape === "Square" ? "⬛ Square (চতুর্ভুজ)" : "🔴 Round (গোল)"}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Size selector with prices */}
+                          {(!isCatCanvas || catShape) && filteredVars.length > 0 && (
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-2">সাইজ বাছুন: <span className="text-destructive">*</span></p>
+                              <div className="flex flex-wrap gap-2">
+                                {filteredVars.map((v) => (
+                                  <button
+                                    key={v.size_label}
+                                    onClick={() => selectCategorySize(cat.id, v.size_label)}
+                                    className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                                      chosenSize === v.size_label
+                                        ? "border-primary bg-primary text-primary-foreground"
+                                        : "border-border text-foreground hover:border-primary/40"
+                                    }`}
+                                  >
+                                    {v.size_label} — ৳{v.price}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {catVars.length === 0 && (
+                            <p className="text-xs text-muted-foreground">এই ক্যাটাগরিতে কোনো সাইজ নেই</p>
+                          )}
                         </div>
                       )}
                     </div>
