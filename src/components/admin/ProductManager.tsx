@@ -249,7 +249,57 @@ const ProductManager = () => {
                 {categories.map((c) => <SelectItem key={c.slug} value={c.slug}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Input placeholder="Image key (e.g. product-frame)" value={form.image_url || ""} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
+            {/* Image Upload Section */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">প্রোডাক্ট ইমেজ</label>
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+              {previewUrl ? (
+                <div className="relative w-full h-40 rounded-lg border border-border overflow-hidden bg-muted">
+                  <img src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="destructive"
+                    className="absolute top-2 right-2 h-7 w-7 p-0"
+                    onClick={removeImage}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-28 border-dashed flex flex-col gap-2"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                >
+                  {uploading ? (
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  ) : (
+                    <>
+                      <Upload className="h-6 w-6 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">ইমেজ আপলোড করুন</span>
+                    </>
+                  )}
+                </Button>
+              )}
+              <Input 
+                placeholder="অথবা Image URL দিন" 
+                value={form.image_url || ""} 
+                onChange={(e) => {
+                  setForm({ ...form, image_url: e.target.value });
+                  setPreviewUrl(e.target.value || null);
+                }} 
+                className="text-xs"
+              />
+            </div>
             <Textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
             <div className="grid grid-cols-2 gap-3">
               <Input type="number" placeholder="Rating" value={form.rating} onChange={(e) => setForm({ ...form, rating: Number(e.target.value) })} />
