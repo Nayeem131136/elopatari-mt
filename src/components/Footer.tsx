@@ -16,7 +16,7 @@ const Footer = () => {
             <p className="text-muted-foreground text-sm max-w-md mb-4">
               হাতে তৈরি উপহার, ভালোবাসায় গড়া। We create unique handmade gifts that bring joy and warmth to every occasion.
             </p>
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+            <div className="flex flex-col gap-2">
               <a
                 href="https://www.facebook.com/Elopatari.MT143"
                 target="_blank"
