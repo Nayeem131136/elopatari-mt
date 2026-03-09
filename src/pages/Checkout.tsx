@@ -100,11 +100,6 @@ const Checkout = () => {
   };
 
   const handleSubmitOrder = () => {
-    if (!user) {
-      toast.error("অর্ডার কনফার্ম করতে প্রথমে লগইন করুন!");
-      navigate("/login");
-      return;
-    }
     if (!validateStep3()) return;
     setShowConfirmation(true);
   };

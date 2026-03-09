@@ -145,11 +145,9 @@ const Cart = () => {
               </div>
             </div>
 
-            <Link to="/checkout">
-              <Button className="w-full mt-6 rounded-full font-semibold btn-glow" size="lg">
-                Proceed to Checkout
-              </Button>
-            </Link>
+            <Button onClick={handleProceedToCheckout} className="w-full mt-6 rounded-full font-semibold btn-glow" size="lg">
+              Proceed to Checkout
+            </Button>
 
             <p className="text-xs text-muted-foreground text-center mt-3">
               bKash বা Nagad এ পে করে অর্ডার কনফার্ম করুন
