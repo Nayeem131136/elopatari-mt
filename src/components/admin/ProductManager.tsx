@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import VariantManager from "./VariantManager";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Loader2, Package } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Package, Upload, X, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 
 interface Product {
@@ -66,6 +66,9 @@ const ProductManager = () => {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyProduct);
+  const [uploading, setUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchData();
@@ -85,6 +88,7 @@ const ProductManager = () => {
   const openNew = () => {
     setEditId(null);
     setForm(emptyProduct);
+    setPreviewUrl(null);
     setOpen(true);
   };
 
@@ -104,7 +108,56 @@ const ProductManager = () => {
       featured: p.featured,
       sort_order: p.sort_order,
     });
+    setPreviewUrl(p.image_url || null);
     setOpen(true);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("শুধুমাত্র ইমেজ ফাইল আপলোড করুন");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("ফাইল সাইজ ৫MB এর বেশি হতে পারবে না");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("product-images")
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("product-images")
+        .getPublicUrl(fileName);
+
+      setForm({ ...form, image_url: publicUrl });
+      setPreviewUrl(publicUrl);
+      toast.success("ইমেজ আপলোড হয়েছে ✅");
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("ইমেজ আপলোড করতে সমস্যা হয়েছে");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeImage = () => {
+    setForm({ ...form, image_url: "" });
+    setPreviewUrl(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleSave = async () => {
@@ -160,6 +213,13 @@ const ProductManager = () => {
       <div className="space-y-2">
         {products.map((p) => (
           <div key={p.id} className="flex items-center gap-3 p-3 bg-card rounded-xl border border-border/50">
+            {p.image_url ? (
+              <img src={p.image_url} alt={p.name} className="w-10 h-10 rounded-lg object-cover border border-border/50 flex-shrink-0" />
+            ) : (
+              <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                <ImageIcon className="h-4 w-4 text-muted-foreground" />
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-medium text-foreground text-sm">{p.name}</span>
@@ -196,7 +256,57 @@ const ProductManager = () => {
                 {categories.map((c) => <SelectItem key={c.slug} value={c.slug}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Input placeholder="Image key (e.g. product-frame)" value={form.image_url || ""} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
+            {/* Image Upload Section */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">প্রোডাক্ট ইমেজ</label>
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+              {previewUrl ? (
+                <div className="relative w-full h-40 rounded-lg border border-border overflow-hidden bg-muted">
+                  <img src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="destructive"
+                    className="absolute top-2 right-2 h-7 w-7 p-0"
+                    onClick={removeImage}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-28 border-dashed flex flex-col gap-2"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                >
+                  {uploading ? (
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  ) : (
+                    <>
+                      <Upload className="h-6 w-6 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">ইমেজ আপলোড করুন</span>
+                    </>
+                  )}
+                </Button>
+              )}
+              <Input 
+                placeholder="অথবা Image URL দিন" 
+                value={form.image_url || ""} 
+                onChange={(e) => {
+                  setForm({ ...form, image_url: e.target.value });
+                  setPreviewUrl(e.target.value || null);
+                }} 
+                className="text-xs"
+              />
+            </div>
             <Textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
             <div className="grid grid-cols-2 gap-3">
               <Input type="number" placeholder="Rating" value={form.rating} onChange={(e) => setForm({ ...form, rating: Number(e.target.value) })} />
