@@ -153,6 +153,7 @@ const ProductDetail = () => {
     // Variant-based products: must select color and size
     if (hasVariants) {
       if (!isSingleColor && !selectedColor) { toast.error("কালার সিলেক্ট করুন!"); return; }
+      if (isCanvas && !selectedShape) { toast.error("শেপ সিলেক্ট করুন (Square / Round)!"); return; }
       if (!selectedSize) { toast.error("সাইজ সিলেক্ট করুন!"); return; }
       if (!currentVariant) { toast.error("এই কম্বিনেশন পাওয়া যায়নি!"); return; }
       const colorToUse = isSingleColor ? colors[0] : selectedColor;
