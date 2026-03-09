@@ -41,7 +41,7 @@ const Cart = () => {
                 ? categorySizes[product.category]?.find((s) => s.value === selectedSize)?.label
                 : null;
 
-              let itemPrice = giftBox ? calcGiftBoxPrice(giftBox) : product.price;
+              let itemPrice = giftBox ? calcGiftBoxPrice(giftBox) : (item.variantPrice ?? product.price);
 
               return (
                 <div key={cartKey} className="flex gap-4 p-4 bg-card rounded-xl border border-border/50">
