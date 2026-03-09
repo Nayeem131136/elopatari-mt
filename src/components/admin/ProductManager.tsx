@@ -213,6 +213,13 @@ const ProductManager = () => {
       <div className="space-y-2">
         {products.map((p) => (
           <div key={p.id} className="flex items-center gap-3 p-3 bg-card rounded-xl border border-border/50">
+            {p.image_url ? (
+              <img src={p.image_url} alt={p.name} className="w-10 h-10 rounded-lg object-cover border border-border/50 flex-shrink-0" />
+            ) : (
+              <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                <ImageIcon className="h-4 w-4 text-muted-foreground" />
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-medium text-foreground text-sm">{p.name}</span>
