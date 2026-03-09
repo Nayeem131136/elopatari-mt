@@ -5,6 +5,7 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import Logo from "@/components/Logo";
 
 const navLinks = [
   { to: "/", label: "Home" },
