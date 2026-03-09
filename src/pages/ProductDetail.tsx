@@ -128,14 +128,15 @@ const ProductDetail = () => {
     for (const cat of sizedCategories) {
       if (enabledCategories[cat.id] && selectedCategories[cat.id]) {
         const sizeVal = selectedCategories[cat.id];
-        const sizeObj = categorySizes[cat.id]?.find((s) => s.value === sizeVal);
-        const baseProduct = products.find((p) => p.category === cat.id);
+        // Find variant to get real price
+        const catVars = giftBoxVariants[cat.id] || [];
+        const variant = catVars.find((v) => v.size_label === sizeVal);
         catItems.push({
           categoryId: cat.id,
           categoryName: cat.name,
           sizeValue: sizeVal,
-          sizeLabel: sizeObj?.label || sizeVal,
-          price: baseProduct?.price || 0,
+          sizeLabel: sizeVal,
+          price: variant?.price || 0,
         });
       }
     }
