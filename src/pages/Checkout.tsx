@@ -69,6 +69,7 @@ const Checkout = () => {
   const [paymentType, setPaymentType] = useState<PaymentType>("delivery-only");
   const [paymentMethod, setPaymentMethod] = useState("bkash");
   const [trxId, setTrxId] = useState("");
+  const [senderLast4, setSenderLast4] = useState("");
 
   // Confirmation
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -356,6 +357,20 @@ const Checkout = () => {
                   <div className="mt-4">
                     <Label className="text-foreground font-semibold mb-1.5">Transaction ID <span className="text-destructive">*</span></Label>
                     <Input placeholder="যেমন: ABC123XYZ" value={trxId} onChange={(e) => setTrxId(e.target.value)} className="font-mono" />
+                  </div>
+
+                  <div className="mt-3">
+                    <Label className="text-foreground font-semibold mb-1.5">প্রেরকের নম্বরের শেষ ৪ ডিজিট <span className="text-destructive">*</span></Label>
+                    <Input
+                      placeholder="যেমন: 7078"
+                      value={senderLast4}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, "").slice(0, 4);
+                        setSenderLast4(val);
+                      }}
+                      className="font-mono"
+                      maxLength={4}
+                    />
                   </div>
                 </div>
 
