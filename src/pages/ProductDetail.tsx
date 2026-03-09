@@ -38,18 +38,22 @@ const ProductDetail = () => {
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
 
   const hasVariants = colors.length > 0;
+  const isSingleColor = colors.length === 1;
+  const effectiveColor = isSingleColor ? colors[0] : selectedColor;
 
   // Current variant based on selection
   const currentVariant = useMemo(() => {
-    if (!hasVariants || !selectedColor || !selectedSize) return null;
-    return getVariant(selectedColor, selectedSize);
-  }, [hasVariants, selectedColor, selectedSize, getVariant]);
+    if (!hasVariants || !effectiveColor || !selectedSize) return null;
+    return getVariant(effectiveColor, selectedSize);
+  }, [hasVariants, effectiveColor, selectedSize, getVariant]);
 
-  // Available sizes for selected color
+  // Available sizes for selected color (or the only color)
   const colorSizes = useMemo(() => {
-    if (!hasVariants || !selectedColor) return [];
-    return getSizesForColor(selectedColor);
-  }, [hasVariants, selectedColor, getSizesForColor]);
+    if (!hasVariants) return [];
+    const colorToUse = isSingleColor ? colors[0] : selectedColor;
+    if (!colorToUse) return [];
+    return getSizesForColor(colorToUse);
+  }, [hasVariants, isSingleColor, colors, selectedColor, getSizesForColor]);
 
   // Display price
   const displayPrice = currentVariant ? currentVariant.price : (product?.price ?? 0);
