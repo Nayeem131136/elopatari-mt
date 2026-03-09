@@ -107,8 +107,7 @@ const Checkout = () => {
 
     setSubmittingOrder(true);
     try {
-      const deliveryOpt = deliveryOptions.find((d) => d.id === delivery);
-      const delCharge = delivery === "outside" ? (deliveryOpt?.charge || 130) * weight : (deliveryOpt?.charge || 80);
+      const delCharge = deliveryCharge;
       const subtotal = totalPrice;
       const total = subtotal + delCharge;
       const amountPaid = paymentType === "full" ? total : delCharge;
