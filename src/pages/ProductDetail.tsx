@@ -38,18 +38,22 @@ const ProductDetail = () => {
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
 
   const hasVariants = colors.length > 0;
+  const isSingleColor = colors.length === 1;
+  const effectiveColor = isSingleColor ? colors[0] : selectedColor;
 
   // Current variant based on selection
   const currentVariant = useMemo(() => {
-    if (!hasVariants || !selectedColor || !selectedSize) return null;
-    return getVariant(selectedColor, selectedSize);
-  }, [hasVariants, selectedColor, selectedSize, getVariant]);
+    if (!hasVariants || !effectiveColor || !selectedSize) return null;
+    return getVariant(effectiveColor, selectedSize);
+  }, [hasVariants, effectiveColor, selectedSize, getVariant]);
 
-  // Available sizes for selected color
+  // Available sizes for selected color (or the only color)
   const colorSizes = useMemo(() => {
-    if (!hasVariants || !selectedColor) return [];
-    return getSizesForColor(selectedColor);
-  }, [hasVariants, selectedColor, getSizesForColor]);
+    if (!hasVariants) return [];
+    const colorToUse = isSingleColor ? colors[0] : selectedColor;
+    if (!colorToUse) return [];
+    return getSizesForColor(colorToUse);
+  }, [hasVariants, isSingleColor, colors, selectedColor, getSizesForColor]);
 
   // Display price
   const displayPrice = currentVariant ? currentVariant.price : (product?.price ?? 0);
@@ -132,14 +136,15 @@ const ProductDetail = () => {
   const handleAdd = () => {
     // Variant-based products: must select color and size
     if (hasVariants) {
-      if (!selectedColor) { toast.error("কালার সিলেক্ট করুন!"); return; }
+      if (!isSingleColor && !selectedColor) { toast.error("কালার সিলেক্ট করুন!"); return; }
       if (!selectedSize) { toast.error("সাইজ সিলেক্ট করুন!"); return; }
       if (!currentVariant) { toast.error("এই কম্বিনেশন পাওয়া যায়নি!"); return; }
+      const colorToUse = isSingleColor ? colors[0] : selectedColor;
       for (let i = 0; i < qty; i++) {
-        addToCart(product, selectedSize, undefined, selectedColor, currentVariant.price);
+        addToCart(product, selectedSize, undefined, colorToUse, currentVariant.price);
       }
-      const colorInfo = colorLabels[selectedColor]?.labelBn || selectedColor;
-      toast.success(`${qty}x ${product.name} (${colorInfo}, ${selectedSize}) কার্টে যোগ হয়েছে!`);
+      const colorInfo = isSingleColor ? "" : ` (${colorLabels[colorToUse]?.labelBn || colorToUse})`;
+      toast.success(`${qty}x ${product.name}${colorInfo} ${selectedSize} কার্টে যোগ হয়েছে!`);
       return;
     }
 
@@ -209,7 +214,7 @@ const ProductDetail = () => {
               ) : hasVariants ? (
                 <>
                   <span className="text-3xl font-bold text-foreground">৳{displayPrice}</span>
-                  {!currentVariant && <span className="text-sm text-muted-foreground">(কালার ও সাইজ সিলেক্ট করুন)</span>}
+                  {!currentVariant && <span className="text-sm text-muted-foreground">({isSingleColor ? "সাইজ সিলেক্ট করুন" : "কালার ও সাইজ সিলেক্ট করুন"})</span>}
                 </>
               ) : (
                 <>
@@ -223,8 +228,8 @@ const ProductDetail = () => {
 
             <p className="text-muted-foreground mb-6 leading-relaxed">{product.description}</p>
 
-            {/* Color Selection (when variants exist) */}
-            {hasVariants && (
+            {/* Color Selection (when multiple colors exist) */}
+            {hasVariants && !isSingleColor && (
               <div className="mb-5">
                 <label className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
                   <Palette className="h-4 w-4 text-primary" /> কালার সিলেক্ট করুন <span className="text-destructive">*</span>
@@ -260,7 +265,7 @@ const ProductDetail = () => {
             )}
 
             {/* Size Selection (variant-based) */}
-            {hasVariants && selectedColor && colorSizes.length > 0 && (
+            {hasVariants && (isSingleColor || selectedColor) && colorSizes.length > 0 && (
               <div className="mb-6">
                 <label className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
                   <Ruler className="h-4 w-4 text-primary" /> সাইজ সিলেক্ট করুন <span className="text-destructive">*</span>
