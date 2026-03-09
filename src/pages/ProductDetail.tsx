@@ -431,7 +431,7 @@ const ProductDetail = () => {
                   }
 
                   const minPrice = catVars.length > 0 ? Math.min(...catVars.map((v) => v.price)) : 0;
-                  const selectedVariant = catVars.find((v) => v.size_label === chosenSize);
+                  const selectedVariant = chosenSize ? catVars.find((v) => v.size_label === chosenSize && v.color === effectiveCatColor) : null;
 
                   return (
                     <div key={cat.id} className={`rounded-xl border-2 transition-all overflow-hidden ${isEnabled ? "border-primary bg-primary/5" : "border-border"}`}>
