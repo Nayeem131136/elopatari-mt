@@ -148,21 +148,26 @@ const VariantManager = ({ productId }: Props) => {
 
       {/* Bulk add buttons */}
       <div className="flex flex-wrap gap-2">
-        <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("black", "rectangular")}>
-          + Black Rectangular
-        </Button>
-        <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("white", "rectangular")}>
-          + White Rectangular
-        </Button>
-        <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("black", "square")}>
-          + Black Square
-        </Button>
-        <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("white", "square")}>
-          + White Square
-        </Button>
-        <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("Default", "embroidery")}>
-          + Embroidery Sizes
-        </Button>
+        {isEmbroidery ? (
+          <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("Default", "embroidery")}>
+            + Embroidery Sizes
+          </Button>
+        ) : (
+          <>
+            <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("black", "rectangular")}>
+              + Black Rectangular
+            </Button>
+            <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("white", "rectangular")}>
+              + White Rectangular
+            </Button>
+            <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("black", "square")}>
+              + Black Square
+            </Button>
+            <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("white", "square")}>
+              + White Square
+            </Button>
+          </>
+        )}
       </div>
 
       {variants.length === 0 && (
