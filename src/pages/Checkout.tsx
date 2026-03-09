@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import { getImage } from "@/components/ProductCard";
 import { categorySizes, products as allProducts, giftBoxExtras } from "@/data/products";
 import { getItemKey, calcGiftBoxPrice } from "@/context/CartContext";
@@ -50,6 +51,7 @@ const steps = [
 
 const Checkout = () => {
   const { items, totalPrice, clearCart } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
 
@@ -98,6 +100,11 @@ const Checkout = () => {
   };
 
   const handleSubmitOrder = () => {
+    if (!user) {
+      toast.error("অর্ডার কনফার্ম করতে প্রথমে লগইন করুন!");
+      navigate("/login");
+      return;
+    }
     if (!validateStep3()) return;
     setShowConfirmation(true);
   };
