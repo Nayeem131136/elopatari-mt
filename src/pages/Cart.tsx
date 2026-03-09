@@ -53,9 +53,19 @@ const Cart = () => {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-foreground text-sm md:text-base">{product.name}</h3>
                     <p className="text-xs text-muted-foreground">{product.nameBn}</p>
-                    {sizeLabel && (
+                    {item.selectedColor && (
                       <span className="inline-block mt-1 text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">
+                        🎨 {item.selectedColor}
+                      </span>
+                    )}
+                    {sizeLabel && (
+                      <span className="inline-block mt-1 ml-1 text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">
                         📐 {sizeLabel}
+                      </span>
+                    )}
+                    {!sizeLabel && item.selectedSize && (
+                      <span className="inline-block mt-1 ml-1 text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">
+                        📐 {item.selectedSize}
                       </span>
                     )}
                     {giftBox && (
