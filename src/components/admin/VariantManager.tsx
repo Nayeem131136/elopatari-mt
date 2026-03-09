@@ -23,6 +23,10 @@ const predefinedSizes = {
     "2.5/2.5 inch", "4/4 inch", "5/5 inch", "6/6 inch",
     "8/8 inch", "10/10 inch", "12/12 inch",
   ],
+  embroidery: [
+    "5 inch", "6 inch", "7 inch", "8 inch", "9 inch", 
+    "10 inch", "11 inch", "12 inch", "13 inch", "14 inch", "15 inch"
+  ]
 };
 
 const allSizes = [...predefinedSizes.rectangular, ...predefinedSizes.square];
