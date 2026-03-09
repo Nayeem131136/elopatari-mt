@@ -41,6 +41,17 @@ const ProductDetail = () => {
   const hasVariants = colors.length > 0;
   const isSingleColor = colors.length === 1;
   const effectiveColor = isSingleColor ? colors[0] : selectedColor;
+  const isCanvas = product?.category === "canvas";
+
+  // Detect available shapes for canvas
+  const availableShapes = useMemo(() => {
+    if (!isCanvas || !hasVariants) return [];
+    const allSizes = variants.map((v) => v.size_label);
+    const shapes: string[] = [];
+    if (allSizes.some((s) => s.includes("(Square)"))) shapes.push("Square");
+    if (allSizes.some((s) => s.includes("(Round)"))) shapes.push("Round");
+    return shapes;
+  }, [isCanvas, hasVariants, variants]);
 
   // Current variant based on selection
   const currentVariant = useMemo(() => {
@@ -48,13 +59,17 @@ const ProductDetail = () => {
     return getVariant(effectiveColor, selectedSize);
   }, [hasVariants, effectiveColor, selectedSize, getVariant]);
 
-  // Available sizes for selected color (or the only color)
+  // Available sizes for selected color, filtered by shape for canvas
   const colorSizes = useMemo(() => {
     if (!hasVariants) return [];
     const colorToUse = isSingleColor ? colors[0] : selectedColor;
     if (!colorToUse) return [];
-    return getSizesForColor(colorToUse);
-  }, [hasVariants, isSingleColor, colors, selectedColor, getSizesForColor]);
+    let sizes = getSizesForColor(colorToUse);
+    if (isCanvas && selectedShape) {
+      sizes = sizes.filter((v) => v.size_label.includes(`(${selectedShape})`));
+    }
+    return sizes;
+  }, [hasVariants, isSingleColor, colors, selectedColor, getSizesForColor, isCanvas, selectedShape]);
 
   // Display price
   const displayPrice = currentVariant ? currentVariant.price : (product?.price ?? 0);
