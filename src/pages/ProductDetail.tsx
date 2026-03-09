@@ -228,8 +228,8 @@ const ProductDetail = () => {
 
             <p className="text-muted-foreground mb-6 leading-relaxed">{product.description}</p>
 
-            {/* Color Selection (when variants exist) */}
-            {hasVariants && (
+            {/* Color Selection (when multiple colors exist) */}
+            {hasVariants && !isSingleColor && (
               <div className="mb-5">
                 <label className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
                   <Palette className="h-4 w-4 text-primary" /> কালার সিলেক্ট করুন <span className="text-destructive">*</span>
