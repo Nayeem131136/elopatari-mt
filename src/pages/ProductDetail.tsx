@@ -30,6 +30,7 @@ const ProductDetail = () => {
   const [qty, setQty] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
+  const [selectedShape, setSelectedShape] = useState<string>("");
 
   // Gift box state
   const [selectedCategories, setSelectedCategories] = useState<Record<string, string>>({});
