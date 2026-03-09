@@ -40,6 +40,7 @@ const ProductDetail = () => {
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
   const [giftBoxVariants, setGiftBoxVariants] = useState<Record<string, ProductVariant[]>>({});
   const [giftBoxShapes, setGiftBoxShapes] = useState<Record<string, string>>({});
+  const [giftBoxColors, setGiftBoxColors] = useState<Record<string, string>>({});
 
   // Fetch variants for all gift box categories
   useEffect(() => {
