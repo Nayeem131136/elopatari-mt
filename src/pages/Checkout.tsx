@@ -358,6 +358,20 @@ const Checkout = () => {
                     <Label className="text-foreground font-semibold mb-1.5">Transaction ID <span className="text-destructive">*</span></Label>
                     <Input placeholder="যেমন: ABC123XYZ" value={trxId} onChange={(e) => setTrxId(e.target.value)} className="font-mono" />
                   </div>
+
+                  <div className="mt-3">
+                    <Label className="text-foreground font-semibold mb-1.5">প্রেরকের নম্বরের শেষ ৪ ডিজিট <span className="text-destructive">*</span></Label>
+                    <Input
+                      placeholder="যেমন: 7078"
+                      value={senderLast4}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, "").slice(0, 4);
+                        setSenderLast4(val);
+                      }}
+                      className="font-mono"
+                      maxLength={4}
+                    />
+                  </div>
                 </div>
 
                 <div className="flex gap-3">
