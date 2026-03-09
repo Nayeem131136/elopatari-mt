@@ -76,6 +76,7 @@ const Checkout = () => {
 
   // Confirmation
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [submittingOrder, setSubmittingOrder] = useState(false);
 
   const deliveryCharge = (() => {
     const opt = deliveryOptions.find((d) => d.id === delivery)!;
