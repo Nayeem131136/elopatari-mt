@@ -49,12 +49,21 @@ const VariantManager = ({ productId }: Props) => {
 
   const fetchVariants = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("product_variants")
-      .select("*")
-      .eq("product_id", productId)
-      .order("sort_order");
-    if (data) setVariants(data as Variant[]);
+    const [{ data: variantsData }, { data: productData }] = await Promise.all([
+      supabase
+        .from("product_variants")
+        .select("*")
+        .eq("product_id", productId)
+        .order("sort_order"),
+      supabase
+        .from("products")
+        .select("category")
+        .eq("id", productId)
+        .maybeSingle(),
+    ]);
+
+    if (variantsData) setVariants(variantsData as Variant[]);
+    if (productData?.category) setProductCategory(productData.category);
     setLoading(false);
   };
 
