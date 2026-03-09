@@ -444,8 +444,8 @@ const Checkout = () => {
                   <Button variant="outline" className="rounded-full flex-1" onClick={() => setStep(2)}>
                     <ArrowLeft className="h-4 w-4 mr-2" /> পেছনে
                   </Button>
-                  <Button className="rounded-full flex-1 btn-glow" size="lg" onClick={handleSubmitOrder}>
-                    অর্ডার কনফার্ম করুন ✨
+                  <Button className="rounded-full flex-1 btn-glow" size="lg" onClick={handleSubmitOrder} disabled={submittingOrder}>
+                    {submittingOrder ? "সাবমিট হচ্ছে..." : "অর্ডার কনফার্ম করুন ✨"}
                   </Button>
                 </div>
               </div>
