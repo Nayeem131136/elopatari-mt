@@ -108,7 +108,56 @@ const ProductManager = () => {
       featured: p.featured,
       sort_order: p.sort_order,
     });
+    setPreviewUrl(p.image_url || null);
     setOpen(true);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("শুধুমাত্র ইমেজ ফাইল আপলোড করুন");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("ফাইল সাইজ ৫MB এর বেশি হতে পারবে না");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("product-images")
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("product-images")
+        .getPublicUrl(fileName);
+
+      setForm({ ...form, image_url: publicUrl });
+      setPreviewUrl(publicUrl);
+      toast.success("ইমেজ আপলোড হয়েছে ✅");
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("ইমেজ আপলোড করতে সমস্যা হয়েছে");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeImage = () => {
+    setForm({ ...form, image_url: "" });
+    setPreviewUrl(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleSave = async () => {
