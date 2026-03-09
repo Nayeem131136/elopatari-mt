@@ -16,14 +16,24 @@ const Footer = () => {
             <p className="text-muted-foreground text-sm max-w-md mb-4">
               হাতে তৈরি উপহার, ভালোবাসায় গড়া। We create unique handmade gifts that bring joy and warmth to every occasion.
             </p>
-            <a
-              href="https://www.facebook.com/Elopatari.MT143"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-primary hover:underline"
-            >
-              Follow us on Facebook →
-            </a>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+              <a
+                href="https://www.facebook.com/Elopatari.MT143"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary hover:underline"
+              >
+                Follow us on Facebook →
+              </a>
+              <a
+                href="https://www.instagram.com/elopatari.mt/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary hover:underline"
+              >
+                Follow us on Instagram →
+              </a>
+            </div>
           </div>
 
           <div>
