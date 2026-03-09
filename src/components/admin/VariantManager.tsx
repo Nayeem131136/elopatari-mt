@@ -183,6 +183,10 @@ const VariantManager = ({ productId }: Props) => {
                 {predefinedSizes.square.map((s) => (
                   <SelectItem key={s} value={s}>{s}</SelectItem>
                 ))}
+                <SelectItem value="__separator_emb" disabled>— Embroidery —</SelectItem>
+                {predefinedSizes.embroidery.map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Input
