@@ -231,7 +231,11 @@ const ProductDetail = () => {
               ) : hasVariants ? (
                 <>
                   <span className="text-3xl font-bold text-foreground">৳{displayPrice}</span>
-                  {!currentVariant && <span className="text-sm text-muted-foreground">({isSingleColor ? "সাইজ সিলেক্ট করুন" : "কালার ও সাইজ সিলেক্ট করুন"})</span>}
+                  {!currentVariant && (
+                    <span className="text-sm text-muted-foreground">
+                      ({isCanvas ? (selectedShape ? "সাইজ সিলেক্ট করুন" : "শেপ সিলেক্ট করুন") : (isSingleColor ? "সাইজ সিলেক্ট করুন" : "কালার ও সাইজ সিলেক্ট করুন")})
+                    </span>
+                  )}
                 </>
               ) : (
                 <>
