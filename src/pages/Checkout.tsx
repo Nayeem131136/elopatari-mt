@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const deliveryOptions = [
   { id: "dhaka", label: "Inside Dhaka", labelBn: "ঢাকার ভেতরে", charge: 80 },
