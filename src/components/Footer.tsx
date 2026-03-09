@@ -9,7 +9,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-2">
             <Link to="/" className="flex items-center gap-2 mb-4">
-              <span className="text-2xl">🎁</span>
+              <Logo className="h-9 w-9" />
               <span className="font-display text-xl font-bold text-foreground">
                 এলোপাতাড়ি<span className="text-primary"> - MT</span>
               </span>
