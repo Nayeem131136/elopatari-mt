@@ -167,6 +167,7 @@ const VariantManager = ({ productId }: Props) => {
               <SelectContent>
                 <SelectItem value="black">⬛ Black</SelectItem>
                 <SelectItem value="white">⬜ White</SelectItem>
+                <SelectItem value="Default">🎨 Default (No color)</SelectItem>
               </SelectContent>
             </Select>
             <Select value={v.size_label} onValueChange={(val) => updateRow(i, "size_label", val)}>
