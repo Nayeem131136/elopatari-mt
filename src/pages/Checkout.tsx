@@ -69,6 +69,7 @@ const Checkout = () => {
   const [paymentType, setPaymentType] = useState<PaymentType>("delivery-only");
   const [paymentMethod, setPaymentMethod] = useState("bkash");
   const [trxId, setTrxId] = useState("");
+  const [senderLast4, setSenderLast4] = useState("");
 
   // Confirmation
   const [showConfirmation, setShowConfirmation] = useState(false);
