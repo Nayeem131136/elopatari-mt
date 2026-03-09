@@ -2,33 +2,57 @@ import { useParams, Link } from "react-router-dom";
 import { categorySizes, requiresSize, giftBoxExtras, giftBoxPackagingCharge } from "@/data/products";
 import { getImage } from "@/components/ProductCard";
 import { useProducts } from "@/hooks/useProductData";
+import { useProductVariants } from "@/hooks/useProductVariants";
 import { useCart, GiftBoxCategoryItem, calcGiftBoxPrice } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
-import { Heart, ShoppingCart, Star, Minus, Plus, ArrowLeft, Ruler, Package, Check, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { Heart, ShoppingCart, Star, Minus, Plus, ArrowLeft, Ruler, Package, Check, ChevronDown, Palette } from "lucide-react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import ProductCard from "@/components/ProductCard";
 
-// Categories that can go in a gift box (with sizes)
 const sizedCategories = [
   { id: "photo-frame", name: "Photo Frame", nameBn: "ফটো ফ্রেম", emoji: "🖼️" },
   { id: "embroidery", name: "Embroidery Hoop Art", nameBn: "এমব্রয়ডারি হুপ আর্ট", emoji: "🧵" },
   { id: "canvas", name: "Canvas Art", nameBn: "ক্যানভাস আর্ট", emoji: "🎨" },
 ];
 
+const colorLabels: Record<string, { label: string, labelBn: string, hex: string }> = {
+  black: { label: "Black", labelBn: "কালো", hex: "#1a1a1a" },
+  white: { label: "White", labelBn: "সাদা", hex: "#f5f5f5" },
+};
+
 const ProductDetail = () => {
   const { id } = useParams();
   const { products } = useProducts();
   const product = products.find((p) => p.id === id);
+  const { variants, colors, getSizesForColor, getVariant } = useProductVariants(id);
   const { addToCart, wishlist, toggleWishlist } = useCart();
   const [qty, setQty] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string>("");
+  const [selectedColor, setSelectedColor] = useState<string>("");
 
   // Gift box state
-  const [selectedCategories, setSelectedCategories] = useState<Record<string, string>>({}); // categoryId -> sizeValue
+  const [selectedCategories, setSelectedCategories] = useState<Record<string, string>>({});
   const [enabledCategories, setEnabledCategories] = useState<Record<string, boolean>>({});
   const [selectedCrochetProducts, setSelectedCrochetProducts] = useState<string[]>([]);
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
+
+  const hasVariants = colors.length > 0;
+
+  // Current variant based on selection
+  const currentVariant = useMemo(() => {
+    if (!hasVariants || !selectedColor || !selectedSize) return null;
+    return getVariant(selectedColor, selectedSize);
+  }, [hasVariants, selectedColor, selectedSize, getVariant]);
+
+  // Available sizes for selected color
+  const colorSizes = useMemo(() => {
+    if (!hasVariants || !selectedColor) return [];
+    return getSizesForColor(selectedColor);
+  }, [hasVariants, selectedColor, getSizesForColor]);
+
+  // Display price
+  const displayPrice = currentVariant ? currentVariant.price : (product?.price ?? 0);
 
   if (!product) {
     return (
@@ -48,17 +72,14 @@ const ProductDetail = () => {
   const sizes = categorySizes[product.category] || [];
   const isGiftBox = product.category === "custom";
 
-  // Crochet products available
   const crochetProducts = products.filter((p) => p.category === "crochet" && p.inStock);
 
-  // Build gift box selection
   const buildGiftBoxSelection = () => {
     const catItems: GiftBoxCategoryItem[] = [];
     for (const cat of sizedCategories) {
       if (enabledCategories[cat.id] && selectedCategories[cat.id]) {
         const sizeVal = selectedCategories[cat.id];
         const sizeObj = categorySizes[cat.id]?.find((s) => s.value === sizeVal);
-        // Use base price from first product of that category
         const baseProduct = products.find((p) => p.category === cat.id);
         catItems.push({
           categoryId: cat.id,
@@ -109,12 +130,24 @@ const ProductDetail = () => {
   };
 
   const handleAdd = () => {
+    // Variant-based products: must select color and size
+    if (hasVariants) {
+      if (!selectedColor) { toast.error("কালার সিলেক্ট করুন!"); return; }
+      if (!selectedSize) { toast.error("সাইজ সিলেক্ট করুন!"); return; }
+      if (!currentVariant) { toast.error("এই কম্বিনেশন পাওয়া যায়নি!"); return; }
+      for (let i = 0; i < qty; i++) {
+        addToCart(product, selectedSize, undefined, selectedColor, currentVariant.price);
+      }
+      const colorInfo = colorLabels[selectedColor]?.labelBn || selectedColor;
+      toast.success(`${qty}x ${product.name} (${colorInfo}, ${selectedSize}) কার্টে যোগ হয়েছে!`);
+      return;
+    }
+
     if (needsSize && !selectedSize) {
       toast.error("সাইজ সিলেক্ট করুন!");
       return;
     }
     if (isGiftBox) {
-      // Validate: enabled categories must have size selected
       for (const cat of sizedCategories) {
         if (enabledCategories[cat.id] && !selectedCategories[cat.id]) {
           toast.error(`${cat.nameBn} এর সাইজ সিলেক্ট করুন!`);
@@ -132,6 +165,11 @@ const ProductDetail = () => {
       for (let i = 0; i < qty; i++) addToCart(product, selectedSize || undefined);
       toast.success(`${qty}x ${product.name}${selectedSize ? ` (${sizes.find(s => s.value === selectedSize)?.label})` : ""} added to cart!`);
     }
+  };
+
+  const handleColorSelect = (color: string) => {
+    setSelectedColor(color);
+    setSelectedSize(""); // Reset size when color changes
   };
 
   return (
@@ -168,6 +206,11 @@ const ProductDetail = () => {
                   <span className="text-3xl font-bold text-foreground">৳{hasAnySelection ? giftBoxTotal : giftBoxPackagingCharge}</span>
                   <span className="text-sm text-muted-foreground">{hasAnySelection ? "(মোট)" : "(প্যাকেজিং থেকে শুরু)"}</span>
                 </>
+              ) : hasVariants ? (
+                <>
+                  <span className="text-3xl font-bold text-foreground">৳{displayPrice}</span>
+                  {!currentVariant && <span className="text-sm text-muted-foreground">(কালার ও সাইজ সিলেক্ট করুন)</span>}
+                </>
               ) : (
                 <>
                   <span className="text-3xl font-bold text-foreground">৳{product.price}</span>
@@ -180,8 +223,69 @@ const ProductDetail = () => {
 
             <p className="text-muted-foreground mb-6 leading-relaxed">{product.description}</p>
 
-            {/* Size Selection (for frame/embroidery/canvas) */}
-            {needsSize && (
+            {/* Color Selection (when variants exist) */}
+            {hasVariants && (
+              <div className="mb-5">
+                <label className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
+                  <Palette className="h-4 w-4 text-primary" /> কালার সিলেক্ট করুন <span className="text-destructive">*</span>
+                </label>
+                <div className="flex gap-3">
+                  {colors.map((color) => {
+                    const info = colorLabels[color] || { label: color, labelBn: color, hex: "#888" };
+                    const isSelected = selectedColor === color;
+                    return (
+                      <button
+                        key={color}
+                        onClick={() => handleColorSelect(color)}
+                        className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl border-2 text-sm font-medium transition-all ${
+                          isSelected
+                            ? "border-primary bg-primary/10 text-primary shadow-sm"
+                            : "border-border text-foreground hover:border-primary/40 hover:bg-muted/50"
+                        }`}
+                      >
+                        <span
+                          className="w-5 h-5 rounded-full border-2 flex-shrink-0"
+                          style={{
+                            backgroundColor: info.hex,
+                            borderColor: isSelected ? "hsl(var(--primary))" : color === "white" ? "#ccc" : info.hex,
+                          }}
+                        />
+                        <span>{info.label}</span>
+                        <span className="text-xs text-muted-foreground">({info.labelBn})</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Size Selection (variant-based) */}
+            {hasVariants && selectedColor && colorSizes.length > 0 && (
+              <div className="mb-6">
+                <label className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
+                  <Ruler className="h-4 w-4 text-primary" /> সাইজ সিলেক্ট করুন <span className="text-destructive">*</span>
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {colorSizes.map((v) => (
+                    <button
+                      key={v.size_label}
+                      onClick={() => setSelectedSize(v.size_label)}
+                      className={`px-4 py-2.5 rounded-lg border-2 text-sm font-medium transition-all ${
+                        selectedSize === v.size_label
+                          ? "border-primary bg-primary/10 text-primary shadow-sm"
+                          : "border-border text-foreground hover:border-primary/40 hover:bg-muted/50"
+                      }`}
+                    >
+                      <span>{v.size_label}</span>
+                      <span className="ml-2 font-bold">৳{v.price}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Size Selection (legacy, for non-variant categories) */}
+            {!hasVariants && needsSize && (
               <div className="mb-6">
                 <label className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
                   <Ruler className="h-4 w-4 text-primary" /> সাইজ সিলেক্ট করুন <span className="text-destructive">*</span>
@@ -211,7 +315,6 @@ const ProductDetail = () => {
                   <Package className="h-4 w-4 text-primary" /> বক্সে কী কী রাখবেন বাছুন
                 </label>
 
-                {/* Sized categories: Frame, Embroidery, Canvas */}
                 {sizedCategories.map((cat) => {
                   const catSizes = categorySizes[cat.id] || [];
                   const isEnabled = !!enabledCategories[cat.id];
@@ -220,11 +323,7 @@ const ProductDetail = () => {
 
                   return (
                     <div key={cat.id} className={`rounded-xl border-2 transition-all overflow-hidden ${isEnabled ? "border-primary bg-primary/5" : "border-border"}`}>
-                      {/* Category toggle */}
-                      <button
-                        onClick={() => toggleCategory(cat.id)}
-                        className="w-full flex items-center gap-3 p-3.5 text-left"
-                      >
+                      <button onClick={() => toggleCategory(cat.id)} className="w-full flex items-center gap-3 p-3.5 text-left">
                         <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${isEnabled ? "bg-primary border-primary" : "border-muted-foreground/40"}`}>
                           {isEnabled && <Check className="h-3 w-3 text-primary-foreground" />}
                         </div>
@@ -236,8 +335,6 @@ const ProductDetail = () => {
                         {baseProduct && <span className="text-sm font-bold text-foreground">৳{baseProduct.price}</span>}
                         <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isEnabled ? "rotate-180" : ""}`} />
                       </button>
-
-                      {/* Size options (shown when enabled) */}
                       {isEnabled && (
                         <div className="px-3.5 pb-3.5 pt-0">
                           <p className="text-xs text-muted-foreground mb-2">সাইজ বাছুন: <span className="text-destructive">*</span></p>
@@ -262,7 +359,6 @@ const ProductDetail = () => {
                   );
                 })}
 
-                {/* Crochet products */}
                 {crochetProducts.length > 0 && (
                   <div className="rounded-xl border-2 border-border overflow-hidden">
                     <div className="p-3.5">
@@ -296,7 +392,6 @@ const ProductDetail = () => {
                   </div>
                 )}
 
-                {/* Extras */}
                 <div>
                   <label className="text-sm font-semibold text-foreground flex items-center gap-2 mb-2">
                     ✨ অতিরিক্ত আইটেম
@@ -327,7 +422,6 @@ const ProductDetail = () => {
                   </div>
                 </div>
 
-                {/* Price breakdown */}
                 {hasAnySelection && (
                   <div className="bg-accent/30 rounded-xl p-4 text-sm space-y-1.5">
                     <p className="font-semibold text-foreground mb-2">💰 মূল্য বিবরণ:</p>
@@ -395,7 +489,11 @@ const ProductDetail = () => {
                 onClick={handleAdd}
               >
                 <ShoppingCart className="h-5 w-5 mr-2" />
-                {isGiftBox ? `Gift Box কার্টে যোগ করুন${hasAnySelection ? ` — ৳${giftBoxTotal}` : ""}` : "Add to Cart"}
+                {isGiftBox
+                  ? `Gift Box কার্টে যোগ করুন${hasAnySelection ? ` — ৳${giftBoxTotal}` : ""}`
+                  : hasVariants && currentVariant
+                    ? `কার্টে যোগ করুন — ৳${currentVariant.price}`
+                    : "Add to Cart"}
               </Button>
               <Button
                 size="lg"
