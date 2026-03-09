@@ -110,7 +110,7 @@ const VariantManager = ({ productId }: Props) => {
     setSaving(false);
   };
 
-  const addBulkPreset = (color: string, sizeGroup: "rectangular" | "square") => {
+  const addBulkPreset = (color: string, sizeGroup: "rectangular" | "square" | "embroidery") => {
     const sizes = predefinedSizes[sizeGroup];
     const newVariants: Variant[] = sizes
       .filter((s) => !variants.some((v) => v.color === color && v.size_label === s))
