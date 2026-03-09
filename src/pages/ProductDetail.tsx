@@ -409,17 +409,27 @@ const ProductDetail = () => {
                   const chosenSize = selectedCategories[cat.id];
                   const isCatCanvas = cat.id === "canvas";
                   const catShape = giftBoxShapes[cat.id] || "";
+                  const catColor = giftBoxColors[cat.id] || "";
 
-                  // For canvas, detect available shapes and filter by selected shape
+                  // Detect colors for this category
+                  const catColors = [...new Set(catVars.map((v) => v.color))].filter((c) => c !== "Default");
+                  const hasColors = catColors.length > 1;
+                  const isSingleColorCat = catColors.length <= 1;
+                  const effectiveCatColor = isSingleColorCat ? (catVars[0]?.color || "Default") : catColor;
+
+                  // For canvas, detect shapes
                   const catShapes = isCatCanvas
-                    ? [...new Set(catVars.map((v) => v.size_label.includes("(Round)") ? "Round" : v.size_label.includes("(Square)") ? "Square" : ""))]
-                        .filter(Boolean)
+                    ? [...new Set(catVars.map((v) => v.size_label.includes("(Round)") ? "Round" : v.size_label.includes("(Square)") ? "Square" : ""))].filter(Boolean)
                     : [];
-                  const filteredVars = isCatCanvas && catShape
-                    ? catVars.filter((v) => v.size_label.includes(`(${catShape})`))
-                    : catVars;
 
-                  // Price range display
+                  // Filter variants by color, then by shape for canvas
+                  let filteredVars = effectiveCatColor
+                    ? catVars.filter((v) => v.color === effectiveCatColor)
+                    : catVars;
+                  if (isCatCanvas && catShape) {
+                    filteredVars = filteredVars.filter((v) => v.size_label.includes(`(${catShape})`));
+                  }
+
                   const minPrice = catVars.length > 0 ? Math.min(...catVars.map((v) => v.price)) : 0;
                   const selectedVariant = catVars.find((v) => v.size_label === chosenSize);
 
@@ -441,6 +451,35 @@ const ProductDetail = () => {
                       </button>
                       {isEnabled && (
                         <div className="px-3.5 pb-3.5 pt-0 space-y-3">
+                          {/* Color selector (for photo-frame etc.) */}
+                          {hasColors && (
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-2">কালার বাছুন: <span className="text-destructive">*</span></p>
+                              <div className="flex gap-2">
+                                {catColors.map((color) => {
+                                  const info = colorLabels[color] || { label: color, labelBn: color, hex: "#888" };
+                                  return (
+                                    <button
+                                      key={color}
+                                      onClick={() => {
+                                        setGiftBoxColors((prev) => ({ ...prev, [cat.id]: color }));
+                                        setSelectedCategories((prev) => { const n = { ...prev }; delete n[cat.id]; return n; });
+                                      }}
+                                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                                        catColor === color
+                                          ? "border-primary bg-primary text-primary-foreground"
+                                          : "border-border text-foreground hover:border-primary/40"
+                                      }`}
+                                    >
+                                      <span className="w-3.5 h-3.5 rounded-full border" style={{ backgroundColor: info.hex, borderColor: color === "white" ? "#ccc" : info.hex }} />
+                                      {info.label} ({info.labelBn})
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
                           {/* Canvas shape selector */}
                           {isCatCanvas && catShapes.length > 1 && (
                             <div>
@@ -466,8 +505,8 @@ const ProductDetail = () => {
                             </div>
                           )}
 
-                          {/* Size selector with prices */}
-                          {(!isCatCanvas || catShape) && filteredVars.length > 0 && (
+                          {/* Size selector with prices - show after color selected (if has colors) and shape selected (if canvas) */}
+                          {(isSingleColorCat || catColor) && (!isCatCanvas || catShape) && filteredVars.length > 0 && (
                             <div>
                               <p className="text-xs text-muted-foreground mb-2">সাইজ বাছুন: <span className="text-destructive">*</span></p>
                               <div className="flex flex-wrap gap-2">
