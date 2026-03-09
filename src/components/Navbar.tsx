@@ -5,6 +5,7 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import Logo from "@/components/Logo";
 
 const navLinks = [
   { to: "/", label: "Home" },
@@ -32,7 +33,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl">🎁</span>
+            <Logo className="h-9 w-9" />
             <span className="font-display text-xl font-bold text-foreground">
               এলোপাতাড়ি<span className="text-primary"> - MT</span>
             </span>
