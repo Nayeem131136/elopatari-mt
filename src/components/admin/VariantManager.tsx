@@ -23,6 +23,10 @@ const predefinedSizes = {
     "2.5/2.5 inch", "4/4 inch", "5/5 inch", "6/6 inch",
     "8/8 inch", "10/10 inch", "12/12 inch",
   ],
+  embroidery: [
+    "5 inch", "6 inch", "7 inch", "8 inch", "9 inch", 
+    "10 inch", "11 inch", "12 inch", "13 inch", "14 inch", "15 inch"
+  ]
 };
 
 const allSizes = [...predefinedSizes.rectangular, ...predefinedSizes.square];
@@ -35,6 +39,9 @@ const VariantManager = ({ productId }: Props) => {
   const [variants, setVariants] = useState<Variant[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [productCategory, setProductCategory] = useState<string>("");
+
+  const isEmbroidery = productCategory === "embroidery";
 
   useEffect(() => {
     fetchVariants();
@@ -42,19 +49,28 @@ const VariantManager = ({ productId }: Props) => {
 
   const fetchVariants = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("product_variants")
-      .select("*")
-      .eq("product_id", productId)
-      .order("sort_order");
-    if (data) setVariants(data as Variant[]);
+    const [{ data: variantsData }, { data: productData }] = await Promise.all([
+      supabase
+        .from("product_variants")
+        .select("*")
+        .eq("product_id", productId)
+        .order("sort_order"),
+      supabase
+        .from("products")
+        .select("category")
+        .eq("id", productId)
+        .maybeSingle(),
+    ]);
+
+    if (variantsData) setVariants(variantsData as Variant[]);
+    if (productData?.category) setProductCategory(productData.category);
     setLoading(false);
   };
 
   const addRow = () => {
     setVariants((prev) => [
       ...prev,
-      { color: "black", size_label: "", price: 0, sort_order: prev.length },
+      { color: isEmbroidery ? "Default" : "black", size_label: "", price: 0, sort_order: prev.length },
     ]);
   };
 
@@ -106,7 +122,7 @@ const VariantManager = ({ productId }: Props) => {
     setSaving(false);
   };
 
-  const addBulkPreset = (color: string, sizeGroup: "rectangular" | "square") => {
+  const addBulkPreset = (color: string, sizeGroup: "rectangular" | "square" | "embroidery") => {
     const sizes = predefinedSizes[sizeGroup];
     const newVariants: Variant[] = sizes
       .filter((s) => !variants.some((v) => v.color === color && v.size_label === s))
@@ -132,18 +148,26 @@ const VariantManager = ({ productId }: Props) => {
 
       {/* Bulk add buttons */}
       <div className="flex flex-wrap gap-2">
-        <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("black", "rectangular")}>
-          + Black Rectangular
-        </Button>
-        <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("white", "rectangular")}>
-          + White Rectangular
-        </Button>
-        <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("black", "square")}>
-          + Black Square
-        </Button>
-        <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("white", "square")}>
-          + White Square
-        </Button>
+        {isEmbroidery ? (
+          <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("Default", "embroidery")}>
+            + Embroidery Sizes
+          </Button>
+        ) : (
+          <>
+            <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("black", "rectangular")}>
+              + Black Rectangular
+            </Button>
+            <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("white", "rectangular")}>
+              + White Rectangular
+            </Button>
+            <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("black", "square")}>
+              + Black Square
+            </Button>
+            <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("white", "square")}>
+              + White Square
+            </Button>
+          </>
+        )}
       </div>
 
       {variants.length === 0 && (
@@ -153,28 +177,43 @@ const VariantManager = ({ productId }: Props) => {
       <div className="space-y-2 max-h-80 overflow-y-auto">
         {variants.map((v, i) => (
           <div key={i} className="flex items-center gap-2 p-2 bg-card rounded-lg border border-border/50">
-            <Select value={v.color} onValueChange={(val) => updateRow(i, "color", val)}>
-              <SelectTrigger className="w-24 h-8 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="black">⬛ Black</SelectItem>
-                <SelectItem value="white">⬜ White</SelectItem>
-              </SelectContent>
-            </Select>
+            {!isEmbroidery && (
+              <Select value={v.color} onValueChange={(val) => updateRow(i, "color", val)}>
+                <SelectTrigger className="w-24 h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="black">⬛ Black</SelectItem>
+                  <SelectItem value="white">⬜ White</SelectItem>
+                  <SelectItem value="Default">🎨 Default (No color)</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
             <Select value={v.size_label} onValueChange={(val) => updateRow(i, "size_label", val)}>
               <SelectTrigger className="flex-1 h-8 text-xs">
                 <SelectValue placeholder="সাইজ বাছুন" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__separator_rect" disabled>— Rectangular —</SelectItem>
-                {predefinedSizes.rectangular.map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
-                ))}
-                <SelectItem value="__separator_sq" disabled>— Square —</SelectItem>
-                {predefinedSizes.square.map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
-                ))}
+                {isEmbroidery ? (
+                  predefinedSizes.embroidery.map((s) => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))
+                ) : (
+                  <>
+                    <SelectItem value="__separator_rect" disabled>— Rectangular —</SelectItem>
+                    {predefinedSizes.rectangular.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                    <SelectItem value="__separator_sq" disabled>— Square —</SelectItem>
+                    {predefinedSizes.square.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                    <SelectItem value="__separator_emb" disabled>— Embroidery —</SelectItem>
+                    {predefinedSizes.embroidery.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </>
+                )}
               </SelectContent>
             </Select>
             <Input
