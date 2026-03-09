@@ -148,6 +148,9 @@ const VariantManager = ({ productId }: Props) => {
         <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("white", "square")}>
           + White Square
         </Button>
+        <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("Default", "embroidery")}>
+          + Embroidery Sizes
+        </Button>
       </div>
 
       {variants.length === 0 && (
