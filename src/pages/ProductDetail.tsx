@@ -38,6 +38,34 @@ const ProductDetail = () => {
   const [enabledCategories, setEnabledCategories] = useState<Record<string, boolean>>({});
   const [selectedCrochetProducts, setSelectedCrochetProducts] = useState<string[]>([]);
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
+  const [giftBoxVariants, setGiftBoxVariants] = useState<Record<string, ProductVariant[]>>({});
+  const [giftBoxShapes, setGiftBoxShapes] = useState<Record<string, string>>({});
+
+  // Fetch variants for all gift box categories
+  useEffect(() => {
+    if (product?.category !== "custom") return;
+    const fetchGiftVariants = async () => {
+      // Get one product per category to fetch its variants
+      const catProducts: Record<string, string> = {};
+      for (const cat of sizedCategories) {
+        const p = products.find((pr) => pr.category === cat.id);
+        if (p) catProducts[cat.id] = p.id;
+      }
+      const results: Record<string, ProductVariant[]> = {};
+      await Promise.all(
+        Object.entries(catProducts).map(async ([catId, prodId]) => {
+          const { data } = await supabase
+            .from("product_variants")
+            .select("*")
+            .eq("product_id", prodId)
+            .order("sort_order");
+          if (data) results[catId] = data as ProductVariant[];
+        })
+      );
+      setGiftBoxVariants(results);
+    };
+    if (products.length > 0) fetchGiftVariants();
+  }, [product?.category, products]);
 
   const hasVariants = colors.length > 0;
   const isSingleColor = colors.length === 1;
