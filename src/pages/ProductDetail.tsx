@@ -2,12 +2,13 @@ import { useParams, Link } from "react-router-dom";
 import { categorySizes, requiresSize, giftBoxExtras, giftBoxPackagingCharge } from "@/data/products";
 import { getImage } from "@/components/ProductCard";
 import { useProducts } from "@/hooks/useProductData";
-import { useProductVariants } from "@/hooks/useProductVariants";
+import { useProductVariants, ProductVariant } from "@/hooks/useProductVariants";
 import { useCart, GiftBoxCategoryItem, calcGiftBoxPrice } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import { Heart, ShoppingCart, Star, Minus, Plus, ArrowLeft, Ruler, Package, Check, ChevronDown, Palette } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import ProductCard from "@/components/ProductCard";
 
 const sizedCategories = [
