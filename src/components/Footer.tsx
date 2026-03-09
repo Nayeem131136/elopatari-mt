@@ -49,7 +49,7 @@ const Footer = () => {
           <div>
             <h4 className="font-display font-semibold mb-4 text-foreground">Contact</h4>
             <div className="space-y-2 text-sm text-muted-foreground">
-              <p>📍 Dhaka, Bangladesh</p>
+              <p>📍 Mohammadpur, Dhaka-1207</p>
               <p>📱 Facebook: Elopatari.MT143</p>
               <p>💌 DM us for custom orders</p>
             </div>
