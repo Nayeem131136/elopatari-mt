@@ -280,8 +280,39 @@ const ProductDetail = () => {
               </div>
             )}
 
+            {/* Shape Selection for Canvas */}
+            {isCanvas && hasVariants && availableShapes.length > 1 && (
+              <div className="mb-5">
+                <label className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
+                  🔷 শেপ সিলেক্ট করুন <span className="text-destructive">*</span>
+                </label>
+                <div className="flex gap-3">
+                  {availableShapes.map((shape) => {
+                    const isSelected = selectedShape === shape;
+                    const emoji = shape === "Square" ? "⬛" : "🔴";
+                    const labelBn = shape === "Square" ? "চতুর্ভুজ" : "গোল";
+                    return (
+                      <button
+                        key={shape}
+                        onClick={() => { setSelectedShape(shape); setSelectedSize(""); }}
+                        className={`flex items-center gap-2.5 px-5 py-3 rounded-xl border-2 text-sm font-medium transition-all ${
+                          isSelected
+                            ? "border-primary bg-primary/10 text-primary shadow-sm"
+                            : "border-border text-foreground hover:border-primary/40 hover:bg-muted/50"
+                        }`}
+                      >
+                        <span className="text-lg">{emoji}</span>
+                        <span>{shape}</span>
+                        <span className="text-xs text-muted-foreground">({labelBn})</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Size Selection (variant-based) */}
-            {hasVariants && (isSingleColor || selectedColor) && colorSizes.length > 0 && (
+            {hasVariants && (isSingleColor || selectedColor) && (isCanvas ? selectedShape : true) && colorSizes.length > 0 && (
               <div className="mb-6">
                 <label className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
                   <Ruler className="h-4 w-4 text-primary" /> সাইজ সিলেক্ট করুন <span className="text-destructive">*</span>
