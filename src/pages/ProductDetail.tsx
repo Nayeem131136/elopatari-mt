@@ -30,6 +30,7 @@ const ProductDetail = () => {
   const [qty, setQty] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
+  const [selectedShape, setSelectedShape] = useState<string>("");
 
   // Gift box state
   const [selectedCategories, setSelectedCategories] = useState<Record<string, string>>({});
@@ -40,6 +41,17 @@ const ProductDetail = () => {
   const hasVariants = colors.length > 0;
   const isSingleColor = colors.length === 1;
   const effectiveColor = isSingleColor ? colors[0] : selectedColor;
+  const isCanvas = product?.category === "canvas";
+
+  // Detect available shapes for canvas
+  const availableShapes = useMemo(() => {
+    if (!isCanvas || !hasVariants) return [];
+    const allSizes = variants.map((v) => v.size_label);
+    const shapes: string[] = [];
+    if (allSizes.some((s) => s.includes("(Square)"))) shapes.push("Square");
+    if (allSizes.some((s) => s.includes("(Round)"))) shapes.push("Round");
+    return shapes;
+  }, [isCanvas, hasVariants, variants]);
 
   // Current variant based on selection
   const currentVariant = useMemo(() => {
@@ -47,13 +59,17 @@ const ProductDetail = () => {
     return getVariant(effectiveColor, selectedSize);
   }, [hasVariants, effectiveColor, selectedSize, getVariant]);
 
-  // Available sizes for selected color (or the only color)
+  // Available sizes for selected color, filtered by shape for canvas
   const colorSizes = useMemo(() => {
     if (!hasVariants) return [];
     const colorToUse = isSingleColor ? colors[0] : selectedColor;
     if (!colorToUse) return [];
-    return getSizesForColor(colorToUse);
-  }, [hasVariants, isSingleColor, colors, selectedColor, getSizesForColor]);
+    let sizes = getSizesForColor(colorToUse);
+    if (isCanvas && selectedShape) {
+      sizes = sizes.filter((v) => v.size_label.includes(`(${selectedShape})`));
+    }
+    return sizes;
+  }, [hasVariants, isSingleColor, colors, selectedColor, getSizesForColor, isCanvas, selectedShape]);
 
   // Display price
   const displayPrice = currentVariant ? currentVariant.price : (product?.price ?? 0);
@@ -137,6 +153,7 @@ const ProductDetail = () => {
     // Variant-based products: must select color and size
     if (hasVariants) {
       if (!isSingleColor && !selectedColor) { toast.error("কালার সিলেক্ট করুন!"); return; }
+      if (isCanvas && !selectedShape) { toast.error("শেপ সিলেক্ট করুন (Square / Round)!"); return; }
       if (!selectedSize) { toast.error("সাইজ সিলেক্ট করুন!"); return; }
       if (!currentVariant) { toast.error("এই কম্বিনেশন পাওয়া যায়নি!"); return; }
       const colorToUse = isSingleColor ? colors[0] : selectedColor;
@@ -214,7 +231,11 @@ const ProductDetail = () => {
               ) : hasVariants ? (
                 <>
                   <span className="text-3xl font-bold text-foreground">৳{displayPrice}</span>
-                  {!currentVariant && <span className="text-sm text-muted-foreground">({isSingleColor ? "সাইজ সিলেক্ট করুন" : "কালার ও সাইজ সিলেক্ট করুন"})</span>}
+                  {!currentVariant && (
+                    <span className="text-sm text-muted-foreground">
+                      ({isCanvas ? (selectedShape ? "সাইজ সিলেক্ট করুন" : "শেপ সিলেক্ট করুন") : (isSingleColor ? "সাইজ সিলেক্ট করুন" : "কালার ও সাইজ সিলেক্ট করুন")})
+                    </span>
+                  )}
                 </>
               ) : (
                 <>
@@ -264,8 +285,39 @@ const ProductDetail = () => {
               </div>
             )}
 
+            {/* Shape Selection for Canvas */}
+            {isCanvas && hasVariants && availableShapes.length > 1 && (
+              <div className="mb-5">
+                <label className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
+                  🔷 শেপ সিলেক্ট করুন <span className="text-destructive">*</span>
+                </label>
+                <div className="flex gap-3">
+                  {availableShapes.map((shape) => {
+                    const isSelected = selectedShape === shape;
+                    const emoji = shape === "Square" ? "⬛" : "🔴";
+                    const labelBn = shape === "Square" ? "চতুর্ভুজ" : "গোল";
+                    return (
+                      <button
+                        key={shape}
+                        onClick={() => { setSelectedShape(shape); setSelectedSize(""); }}
+                        className={`flex items-center gap-2.5 px-5 py-3 rounded-xl border-2 text-sm font-medium transition-all ${
+                          isSelected
+                            ? "border-primary bg-primary/10 text-primary shadow-sm"
+                            : "border-border text-foreground hover:border-primary/40 hover:bg-muted/50"
+                        }`}
+                      >
+                        <span className="text-lg">{emoji}</span>
+                        <span>{shape}</span>
+                        <span className="text-xs text-muted-foreground">({labelBn})</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Size Selection (variant-based) */}
-            {hasVariants && (isSingleColor || selectedColor) && colorSizes.length > 0 && (
+            {hasVariants && (isSingleColor || selectedColor) && (isCanvas ? selectedShape : true) && colorSizes.length > 0 && (
               <div className="mb-6">
                 <label className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
                   <Ruler className="h-4 w-4 text-primary" /> সাইজ সিলেক্ট করুন <span className="text-destructive">*</span>
