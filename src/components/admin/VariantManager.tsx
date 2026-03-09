@@ -70,7 +70,7 @@ const VariantManager = ({ productId }: Props) => {
   const addRow = () => {
     setVariants((prev) => [
       ...prev,
-      { color: "black", size_label: "", price: 0, sort_order: prev.length },
+      { color: isEmbroidery ? "Default" : "black", size_label: "", price: 0, sort_order: prev.length },
     ]);
   };
 
