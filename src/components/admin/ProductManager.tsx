@@ -88,6 +88,7 @@ const ProductManager = () => {
   const openNew = () => {
     setEditId(null);
     setForm(emptyProduct);
+    setPreviewUrl(null);
     setOpen(true);
   };
 
