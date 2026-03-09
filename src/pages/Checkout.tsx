@@ -36,8 +36,8 @@ const deliveryOptions = [
 ];
 
 const paymentMethods = [
-  { id: "bkash", name: "bKash", number: "01XXXXXXXXX", color: "bg-pink-500" },
-  { id: "nagad", name: "Nagad", number: "01XXXXXXXXX", color: "bg-orange-500" },
+  { id: "bkash", name: "bKash", number: "01740527078", color: "bg-pink-500" },
+  { id: "nagad", name: "Nagad", number: "01740527078", color: "bg-orange-500" },
 ];
 
 type PaymentType = "delivery-only" | "full";
