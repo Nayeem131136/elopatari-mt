@@ -211,6 +211,9 @@ const ProductManager = () => {
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               {editId ? "আপডেট করুন" : "যোগ করুন"}
             </Button>
+            {editId && (
+              <VariantManager productId={editId} />
+            )}
           </div>
         </DialogContent>
       </Dialog>
