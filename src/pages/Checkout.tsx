@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import { getImage } from "@/components/ProductCard";
 import { categorySizes, products as allProducts, giftBoxExtras } from "@/data/products";
 import { getItemKey, calcGiftBoxPrice } from "@/context/CartContext";
