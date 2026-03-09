@@ -52,7 +52,7 @@ const Login = () => {
     <div className="pt-24 pb-16 min-h-screen flex items-center justify-center">
       <div className="w-full max-w-md mx-auto px-4">
         <div className="text-center mb-8">
-          <span className="text-4xl block mb-3">🎁</span>
+          <span className="text-4xl block mb-3">✨</span>
           <h1 className="font-display text-3xl font-bold text-foreground mb-2">
             {isSignUp ? "Create Account" : "Welcome Back"}
           </h1>
