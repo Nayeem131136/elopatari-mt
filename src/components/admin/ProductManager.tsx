@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import VariantManager from "./VariantManager";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -210,6 +211,9 @@ const ProductManager = () => {
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               {editId ? "আপডেট করুন" : "যোগ করুন"}
             </Button>
+            {editId && (
+              <VariantManager productId={editId} />
+            )}
           </div>
         </DialogContent>
       </Dialog>
