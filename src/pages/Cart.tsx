@@ -1,5 +1,6 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCart, getItemKey, calcGiftBoxPrice } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import { getImage } from "@/components/ProductCard";
 import { categorySizes, products as allProducts, giftBoxExtras } from "@/data/products";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,17 @@ import { toast } from "sonner";
 
 const Cart = () => {
   const { items, updateQuantity, removeFromCart, totalPrice } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleProceedToCheckout = () => {
+    if (!user) {
+      toast.error("চেকআউট করতে প্রথমে লগইন করুন!");
+      navigate("/login");
+      return;
+    }
+    navigate("/checkout");
+  };
 
   if (items.length === 0) {
     return (
@@ -133,11 +145,9 @@ const Cart = () => {
               </div>
             </div>
 
-            <Link to="/checkout">
-              <Button className="w-full mt-6 rounded-full font-semibold btn-glow" size="lg">
-                Proceed to Checkout
-              </Button>
-            </Link>
+            <Button onClick={handleProceedToCheckout} className="w-full mt-6 rounded-full font-semibold btn-glow" size="lg">
+              Proceed to Checkout
+            </Button>
 
             <p className="text-xs text-muted-foreground text-center mt-3">
               bKash বা Nagad এ পে করে অর্ডার কনফার্ম করুন
