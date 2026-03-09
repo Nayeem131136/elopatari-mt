@@ -15,6 +15,7 @@ interface Variant {
 }
 
 const predefinedSizes = {
+  // Photo frame sizes
   rectangular: [
     "8/6 inch", "10/8 inch", "10/9 inch", "11/9 inch",
     "12/8 inch", "13/9 inch", "12/10 inch",
@@ -23,13 +24,38 @@ const predefinedSizes = {
     "2.5/2.5 inch", "4/4 inch", "5/5 inch", "6/6 inch",
     "8/8 inch", "10/10 inch", "12/12 inch",
   ],
+  // Embroidery sizes
   embroidery: [
-    "5 inch", "6 inch", "7 inch", "8 inch", "9 inch", 
+    "5 inch", "6 inch", "7 inch", "8 inch", "9 inch",
     "10 inch", "11 inch", "12 inch", "13 inch", "14 inch", "15 inch"
-  ]
+  ],
+  // Canvas sizes
+  canvas_square: [
+    "4/4 inch (Square)", "4/6 inch (Square)", "5/5 inch (Square)", "6/6 inch (Square)",
+    "6/8 inch (Square)", "8/8 inch (Square)", "8/10 inch (Square)",
+    "10/10 inch (Square)", "10/12 inch (Square)", "12/12 inch (Square)",
+  ],
+  canvas_round: [
+    "5/5 inch (Round)", "6/6 inch (Round)", "8/8 inch (Round)",
+    "10/10 inch (Round)", "12/12 inch (Round)",
+  ],
 };
 
-const allSizes = [...predefinedSizes.rectangular, ...predefinedSizes.square];
+// Auto-fill prices for known presets
+const predefinedPrices: Record<string, Record<string, number>> = {
+  canvas_square: {
+    "4/4 inch (Square)": 250, "4/6 inch (Square)": 300, "5/5 inch (Square)": 350,
+    "6/6 inch (Square)": 400, "6/8 inch (Square)": 500, "8/8 inch (Square)": 550,
+    "8/10 inch (Square)": 700, "10/10 inch (Square)": 800, "10/12 inch (Square)": 950,
+    "12/12 inch (Square)": 1000,
+  },
+  canvas_round: {
+    "5/5 inch (Round)": 450, "6/6 inch (Round)": 500, "8/8 inch (Round)": 550,
+    "10/10 inch (Round)": 600, "12/12 inch (Round)": 650,
+  },
+};
+
+type SizeGroup = keyof typeof predefinedSizes;
 
 interface Props {
   productId: string;
@@ -42,6 +68,8 @@ const VariantManager = ({ productId }: Props) => {
   const [productCategory, setProductCategory] = useState<string>("");
 
   const isEmbroidery = productCategory === "embroidery";
+  const isCanvas = productCategory === "canvas";
+  const isCustom = productCategory === "custom";
 
   useEffect(() => {
     fetchVariants();
@@ -50,122 +78,123 @@ const VariantManager = ({ productId }: Props) => {
   const fetchVariants = async () => {
     setLoading(true);
     const [{ data: variantsData }, { data: productData }] = await Promise.all([
-      supabase
-        .from("product_variants")
-        .select("*")
-        .eq("product_id", productId)
-        .order("sort_order"),
-      supabase
-        .from("products")
-        .select("category")
-        .eq("id", productId)
-        .maybeSingle(),
+      supabase.from("product_variants").select("*").eq("product_id", productId).order("sort_order"),
+      supabase.from("products").select("category").eq("id", productId).maybeSingle(),
     ]);
-
     if (variantsData) setVariants(variantsData as Variant[]);
     if (productData?.category) setProductCategory(productData.category);
     setLoading(false);
   };
 
   const addRow = () => {
-    setVariants((prev) => [
-      ...prev,
-      { color: isEmbroidery ? "Default" : "black", size_label: "", price: 0, sort_order: prev.length },
-    ]);
+    const defaultColor = (isEmbroidery || isCanvas || isCustom) ? "Default" : "black";
+    setVariants((prev) => [...prev, { color: defaultColor, size_label: "", price: 0, sort_order: prev.length }]);
   };
 
   const removeRow = async (index: number) => {
     const v = variants[index];
-    if (v.id) {
-      await supabase.from("product_variants").delete().eq("id", v.id);
-    }
+    if (v.id) await supabase.from("product_variants").delete().eq("id", v.id);
     setVariants((prev) => prev.filter((_, i) => i !== index));
   };
 
   const updateRow = (index: number, field: keyof Variant, value: string | number) => {
-    setVariants((prev) =>
-      prev.map((v, i) => (i === index ? { ...v, [field]: value } : v))
-    );
+    setVariants((prev) => prev.map((v, i) => (i === index ? { ...v, [field]: value } : v)));
   };
 
   const handleSaveAll = async () => {
     const invalid = variants.find((v) => !v.size_label || v.price <= 0);
-    if (invalid) {
-      toast.error("সব ভ্যারিয়েন্টে সাইজ ও দাম দিন");
-      return;
-    }
+    if (invalid) { toast.error("সব ভ্যারিয়েন্টে সাইজ ও দাম দিন"); return; }
     setSaving(true);
-
-    // Delete all existing then re-insert
     await supabase.from("product_variants").delete().eq("product_id", productId);
-
     const rows = variants.map((v, i) => ({
-      product_id: productId,
-      color: v.color,
-      size_label: v.size_label,
-      price: v.price,
-      sort_order: i,
+      product_id: productId, color: v.color, size_label: v.size_label, price: v.price, sort_order: i,
     }));
-
     if (rows.length > 0) {
       const { error } = await supabase.from("product_variants").insert(rows);
-      if (error) {
-        toast.error("ভ্যারিয়েন্ট সেভ করতে সমস্যা");
-        console.error(error);
-      } else {
-        toast.success("ভ্যারিয়েন্ট সেভ হয়েছে ✅");
-        fetchVariants();
-      }
+      if (error) { toast.error("ভ্যারিয়েন্ট সেভ করতে সমস্যা"); console.error(error); }
+      else { toast.success("ভ্যারিয়েন্ট সেভ হয়েছে ✅"); fetchVariants(); }
     } else {
       toast.success("সব ভ্যারিয়েন্ট মুছে ফেলা হয়েছে");
     }
     setSaving(false);
   };
 
-  const addBulkPreset = (color: string, sizeGroup: "rectangular" | "square" | "embroidery") => {
+  const addBulkPreset = (color: string, sizeGroup: SizeGroup) => {
     const sizes = predefinedSizes[sizeGroup];
+    const prices = predefinedPrices[sizeGroup] || {};
     const newVariants: Variant[] = sizes
       .filter((s) => !variants.some((v) => v.color === color && v.size_label === s))
       .map((s, i) => ({
-        color,
-        size_label: s,
-        price: 0,
-        sort_order: variants.length + i,
+        color, size_label: s, price: prices[s] || 0, sort_order: variants.length + i,
       }));
     setVariants((prev) => [...prev, ...newVariants]);
   };
+
+  // Get available sizes for the dropdown based on category
+  const getSizeOptions = () => {
+    if (isEmbroidery) return predefinedSizes.embroidery.map((s) => ({ label: s, value: s }));
+    if (isCanvas) return [
+      ...predefinedSizes.canvas_square.map((s) => ({ label: s, value: s })),
+      ...predefinedSizes.canvas_round.map((s) => ({ label: s, value: s })),
+    ];
+    // photo-frame, custom, etc.
+    return [
+      ...predefinedSizes.rectangular.map((s) => ({ label: s, value: s })),
+      ...predefinedSizes.square.map((s) => ({ label: s, value: s })),
+      ...predefinedSizes.embroidery.map((s) => ({ label: s, value: s })),
+      ...predefinedSizes.canvas_square.map((s) => ({ label: s, value: s })),
+      ...predefinedSizes.canvas_round.map((s) => ({ label: s, value: s })),
+    ];
+  };
+
+  const showColorPicker = !isEmbroidery && !isCanvas && !isCustom;
 
   if (loading) return <div className="flex justify-center py-4"><Loader2 className="h-4 w-4 animate-spin" /></div>;
 
   return (
     <div className="space-y-3 border border-border rounded-xl p-4 bg-muted/30">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground">🎨 কালার ও সাইজ ভ্যারিয়েন্ট ({variants.length})</h3>
+        <h3 className="text-sm font-semibold text-foreground">🎨 সাইজ ভ্যারিয়েন্ট ({variants.length})</h3>
         <Button onClick={addRow} size="sm" variant="outline" className="gap-1 text-xs">
           <Plus className="h-3 w-3" /> নতুন সারি
         </Button>
       </div>
 
-      {/* Bulk add buttons */}
+      {/* Bulk add buttons - category aware */}
       <div className="flex flex-wrap gap-2">
-        {isEmbroidery ? (
+        {isEmbroidery && (
           <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("Default", "embroidery")}>
             + Embroidery Sizes
           </Button>
-        ) : (
+        )}
+        {isCanvas && (
           <>
-            <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("black", "rectangular")}>
-              + Black Rectangular
+            <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("Default", "canvas_square")}>
+              + Square Canvas (দাম সহ)
             </Button>
-            <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("white", "rectangular")}>
-              + White Rectangular
+            <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("Default", "canvas_round")}>
+              + Round Canvas (দাম সহ)
             </Button>
-            <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("black", "square")}>
-              + Black Square
+          </>
+        )}
+        {!isEmbroidery && !isCanvas && (
+          <>
+            <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset(showColorPicker ? "black" : "Default", "rectangular")}>
+              + {showColorPicker ? "Black " : ""}Rectangular
             </Button>
-            <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("white", "square")}>
-              + White Square
+            {showColorPicker && (
+              <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("white", "rectangular")}>
+                + White Rectangular
+              </Button>
+            )}
+            <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset(showColorPicker ? "black" : "Default", "square")}>
+              + {showColorPicker ? "Black " : ""}Square
             </Button>
+            {showColorPicker && (
+              <Button size="sm" variant="secondary" className="text-xs" onClick={() => addBulkPreset("white", "square")}>
+                + White Square
+              </Button>
+            )}
           </>
         )}
       </div>
@@ -177,49 +206,46 @@ const VariantManager = ({ productId }: Props) => {
       <div className="space-y-2 max-h-80 overflow-y-auto">
         {variants.map((v, i) => (
           <div key={i} className="flex items-center gap-2 p-2 bg-card rounded-lg border border-border/50">
-            {!isEmbroidery && (
+            {showColorPicker && (
               <Select value={v.color} onValueChange={(val) => updateRow(i, "color", val)}>
-                <SelectTrigger className="w-24 h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger className="w-24 h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="black">⬛ Black</SelectItem>
                   <SelectItem value="white">⬜ White</SelectItem>
-                  <SelectItem value="Default">🎨 Default (No color)</SelectItem>
+                  <SelectItem value="Default">🎨 Default</SelectItem>
                 </SelectContent>
               </Select>
             )}
             <Select value={v.size_label} onValueChange={(val) => updateRow(i, "size_label", val)}>
-              <SelectTrigger className="flex-1 h-8 text-xs">
-                <SelectValue placeholder="সাইজ বাছুন" />
-              </SelectTrigger>
+              <SelectTrigger className="flex-1 h-8 text-xs"><SelectValue placeholder="সাইজ বাছুন" /></SelectTrigger>
               <SelectContent>
-                {isEmbroidery ? (
-                  predefinedSizes.embroidery.map((s) => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
-                  ))
+                {isCanvas ? (
+                  <>
+                    <SelectItem value="__sep_sq" disabled>— Square Canvas —</SelectItem>
+                    {predefinedSizes.canvas_square.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    <SelectItem value="__sep_rd" disabled>— Round Canvas —</SelectItem>
+                    {predefinedSizes.canvas_round.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </>
+                ) : isEmbroidery ? (
+                  predefinedSizes.embroidery.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)
                 ) : (
                   <>
-                    <SelectItem value="__separator_rect" disabled>— Rectangular —</SelectItem>
-                    {predefinedSizes.rectangular.map((s) => (
-                      <SelectItem key={s} value={s}>{s}</SelectItem>
-                    ))}
-                    <SelectItem value="__separator_sq" disabled>— Square —</SelectItem>
-                    {predefinedSizes.square.map((s) => (
-                      <SelectItem key={s} value={s}>{s}</SelectItem>
-                    ))}
-                    <SelectItem value="__separator_emb" disabled>— Embroidery —</SelectItem>
-                    {predefinedSizes.embroidery.map((s) => (
-                      <SelectItem key={s} value={s}>{s}</SelectItem>
-                    ))}
+                    <SelectItem value="__sep_rect" disabled>— Rectangular —</SelectItem>
+                    {predefinedSizes.rectangular.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    <SelectItem value="__sep_sq2" disabled>— Square —</SelectItem>
+                    {predefinedSizes.square.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    <SelectItem value="__sep_emb" disabled>— Embroidery —</SelectItem>
+                    {predefinedSizes.embroidery.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    <SelectItem value="__sep_csq" disabled>— Canvas Square —</SelectItem>
+                    {predefinedSizes.canvas_square.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    <SelectItem value="__sep_crd" disabled>— Canvas Round —</SelectItem>
+                    {predefinedSizes.canvas_round.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                   </>
                 )}
               </SelectContent>
             </Select>
             <Input
-              type="number"
-              placeholder="৳"
-              value={v.price || ""}
+              type="number" placeholder="৳" value={v.price || ""}
               onChange={(e) => updateRow(i, "price", Number(e.target.value))}
               className="w-24 h-8 text-xs"
             />
