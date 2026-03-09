@@ -39,6 +39,9 @@ const VariantManager = ({ productId }: Props) => {
   const [variants, setVariants] = useState<Variant[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [productCategory, setProductCategory] = useState<string>("");
+
+  const isEmbroidery = productCategory === "embroidery";
 
   useEffect(() => {
     fetchVariants();
