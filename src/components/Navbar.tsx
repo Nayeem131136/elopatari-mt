@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ShoppingCart, Heart, Search, Menu, X, User, LogOut, Shield } from "lucide-react";
+import { ShoppingCart, Heart, Search, Menu, X, User, LogOut, Shield, ClipboardList } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -94,6 +94,11 @@ const Navbar = () => {
 
             {user ? (
               <div className="hidden sm:flex items-center gap-1">
+                <Link to="/my-orders">
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary" title="My Orders">
+                    <ClipboardList className="h-5 w-5" />
+                  </Button>
+                </Link>
                 <Link to="/profile">
                   <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary" title="Profile">
                     <User className="h-5 w-5" />
@@ -149,6 +154,13 @@ const Navbar = () => {
             )}
             {user ? (
               <>
+                <Link
+                  to="/my-orders"
+                  onClick={() => setMobileOpen(false)}
+                  className="block py-3 px-2 text-sm font-medium text-muted-foreground border-b border-border/30"
+                >
+                  📦 My Orders
+                </Link>
                 <Link
                   to="/profile"
                   onClick={() => setMobileOpen(false)}
