@@ -94,6 +94,11 @@ const Navbar = () => {
 
             {user ? (
               <div className="hidden sm:flex items-center gap-1">
+                <Link to="/my-orders">
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary" title="My Orders">
+                    <ClipboardList className="h-5 w-5" />
+                  </Button>
+                </Link>
                 <Link to="/profile">
                   <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary" title="Profile">
                     <User className="h-5 w-5" />
