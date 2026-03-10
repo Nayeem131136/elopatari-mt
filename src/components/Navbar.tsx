@@ -155,6 +155,13 @@ const Navbar = () => {
             {user ? (
               <>
                 <Link
+                  to="/my-orders"
+                  onClick={() => setMobileOpen(false)}
+                  className="block py-3 px-2 text-sm font-medium text-muted-foreground border-b border-border/30"
+                >
+                  📦 My Orders
+                </Link>
+                <Link
                   to="/profile"
                   onClick={() => setMobileOpen(false)}
                   className="block py-3 px-2 text-sm font-medium text-muted-foreground border-b border-border/30"
