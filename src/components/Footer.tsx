@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { Heart } from "lucide-react";
 import Logo from "@/components/Logo";
 
 const Footer = () => {
@@ -67,9 +66,19 @@ const Footer = () => {
           </div>
         </div>
 
+        {/* Footer Bottom Section with Bold Name */}
         <div className="border-t border-border/50 mt-8 pt-8 text-center">
-          <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
-            Made with <Heart className="h-3 w-3 fill-primary text-primary" /> by এলোপাতাড়ি - MT © {new Date().getFullYear()}
+          <p className="text-sm text-muted-foreground">
+            Developed by{" "}
+            <a 
+              href="https://nayeem131136.github.io/portfolio/" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-primary font-bold hover:underline transition-all underline-offset-4"
+            >
+              Md. Mahdi Hasan Nayeem
+            </a>{" "}
+            | এলোপাতাড়ি - MT © {new Date().getFullYear()}
           </p>
         </div>
       </div>
