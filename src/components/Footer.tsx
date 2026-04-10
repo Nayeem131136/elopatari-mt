@@ -71,7 +71,7 @@ const Footer = () => {
           <p className="text-sm text-muted-foreground">
             Developed by{" "}
             <a 
-              href="https://nayeem131136.github.io/portfolio/" 
+              href="https://mahdi-hasan-nayeem-portfolio.vercel.app/" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="text-primary font-bold hover:underline transition-all underline-offset-4"
